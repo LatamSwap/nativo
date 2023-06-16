@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-// This is a modified version of solady ERC20 implementation 
+// This is a modified version of solady ERC20 implementation
 // https://github.com/Vectorized/solady/blob/c51948c6789a28aa64464b86eacac45e2fdf0373/src/tokens/ERC20.sol
 
 // Modifications:
@@ -71,7 +71,7 @@ abstract contract ERC20 {
     /// `slot = _BALANCE_SLOT_SEED << 168 | uint256(uint160(owner))`
     /// ```
     ///     let balanceSlot := or(_BALANCE_SLOT_MASK, owner)
-    /// 
+    ///
     /// ```
     /// This is a hack to avoid computing the keccak256 hash of balance
     /// Balances will be stored in the slots;
@@ -124,12 +124,7 @@ abstract contract ERC20 {
     }
 
     /// @dev Returns the amount of tokens that `spender` can spend on behalf of `owner`.
-    function allowance(address owner, address spender)
-        public
-        view
-        virtual
-        returns (uint256 result)
-    {
+    function allowance(address owner, address spender) public view virtual returns (uint256 result) {
         /// @solidity memory-safe-assembly
         assembly {
             mstore(0x20, spender)
@@ -315,15 +310,10 @@ abstract contract ERC20 {
     /// authorized by a signed approval by `owner`.
     ///
     /// Emits a {Approval} event.
-    function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public virtual {
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        public
+        virtual
+    {
         bytes32 domainSeparator = DOMAIN_SEPARATOR();
         /// @solidity memory-safe-assembly
         assembly {
@@ -480,7 +470,7 @@ abstract contract ERC20 {
             // Emit the {Transfer} event.
             mstore(0x20, amount)
             log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), shr(96, shl(96, to)))
-        }      
+        }
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/

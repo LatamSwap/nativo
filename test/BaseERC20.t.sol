@@ -32,7 +32,6 @@ contract Erc20Test is Test {
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
-
     function setUp() public {
         token = new Mock();
     }
@@ -53,11 +52,11 @@ contract Erc20Test is Test {
 
     function testTransfer(address to, uint256 amount) public {
         token.mint(address(this), amount);
-        
+
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(this), to, amount);
         token.transfer(to, amount);
-        if(to!= address(this)) assertEq(token.balanceOf(address(this)), 0);
+        if (to != address(this)) assertEq(token.balanceOf(address(this)), 0);
         assertEq(token.balanceOf(to), amount);
     }
 
@@ -72,18 +71,17 @@ contract Erc20Test is Test {
         vm.expectEmit(true, true, true, true);
         emit Transfer(from, to, amount);
         token.transferFrom(from, to, amount);
-        if(to!= from) assertEq(token.balanceOf(from), 0);
+        if (to != from) assertEq(token.balanceOf(from), 0);
         assertEq(token.balanceOf(to), amount);
     }
 
-    
     function testInternalTransfer(address to, uint256 amount) public {
         token.mint(address(this), amount);
-        
+
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(this), to, amount);
         token.tr(to, amount);
-        if(to!= address(this)) assertEq(token.balanceOf(address(this)), 0);
+        if (to != address(this)) assertEq(token.balanceOf(address(this)), 0);
         assertEq(token.balanceOf(to), amount);
     }
 }
