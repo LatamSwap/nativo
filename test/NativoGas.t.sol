@@ -169,4 +169,39 @@ contract NativoGasTest is Test, Benchmark {
         benchmarkEnd();
         vm.stopPrank();
     }
+
+    function testBenchmarkInfinityApprove() public {
+        vm.deal(EOAnativo, 1 ether);
+        vm.deal(EOAweth, 1 ether);
+
+        vm.prank(EOAnativo);
+        nativo.deposit{value: 1 ether}();
+
+        vm.prank(EOAweth);
+        weth.deposit{value: 1 ether}();
+
+        vm.startPrank(EOAweth);
+        benchmarkStart("weth.approve() infinity");
+        weth.approve(address(0x01), type(uint256).max);
+        benchmarkEnd();
+        vm.stopPrank();
+
+        vm.startPrank(EOAnativo);
+        benchmarkStart("nativo.approve() infinity");
+        nativo.approve(address(0x01), type(uint256).max);
+        benchmarkEnd();
+        vm.stopPrank();
+
+        vm.startPrank(address(0x01));
+        benchmarkStart("nativo.transferFrom() infinity");
+        nativo.transferFrom(EOAnativo, address(0x02), 0.01 ether);
+        benchmarkEnd();
+        vm.stopPrank();
+
+        vm.startPrank(address(0x01));
+        benchmarkStart("weth.transferFrom() infinity");
+        weth.transferFrom(EOAweth, address(0x02), 0.01 ether);
+        benchmarkEnd();
+        vm.stopPrank();
+    }
 }
