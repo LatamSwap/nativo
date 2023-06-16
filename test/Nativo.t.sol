@@ -14,12 +14,12 @@ contract NativoTest is Test {
         vm.warp(1);
 
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Natice crytpo", "Wany");
+        nativo = new Nativo("Wrapped Native crypto", "wANY");
     }
 
     function testMetadata() public {
-        assertEq(nativo.name(), "Wrapped Natice crytpo", "Wrong name");
-        assertEq(nativo.symbol(), "Wany", "Wrong symbol");
+        assertEq(nativo.name(), "Wrapped Native crypto", "Wrong name");
+        assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
     }
 
