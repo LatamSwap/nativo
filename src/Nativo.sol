@@ -2,8 +2,9 @@
 pragma solidity 0.8.20;
 
 import {ERC20} from "./ERC20.sol";
+import {ERC3156} from "./ERC3156.sol";
 
-contract Nativo is ERC20 {
+contract Nativo is ERC20, ERC3156 {
     string private _name;
     string private _symbol;
 
@@ -17,6 +18,10 @@ contract Nativo is ERC20 {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
+    }
+
+    function _flashFeeReceiver() internal override view returns (address) {
+        return treasury;
     }
 
     /// @dev Returns the name of the token.
@@ -73,7 +78,7 @@ contract Nativo is ERC20 {
     }
 
     function totalSupply() external view returns (uint256) {
-        return address(this).balance;
+        return address(this).balance + 1 - _flashMinted;
     }
 
     function _transferEth(address to, uint256 amount) private {
