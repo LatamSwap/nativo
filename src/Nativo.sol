@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {ERC20} from "./ERC20.sol";
-import {ERC3156} from "./ERC3156.sol";
-import {ERC1363} from "./ERC1363.sol";
+import {ERC20} from "./ERC/ERC20.sol";
+import {ERC3156} from "./ERC/ERC3156.sol";
+import {ERC1363} from "./ERC/ERC1363.sol";
 
 contract Nativo is ERC20, ERC3156, ERC1363 {
     string private _name;
