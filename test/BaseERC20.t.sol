@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/ERC20.sol";
+import "../src/ERC/ERC20.sol";
 
 contract Mock is ERC20 {
     function name() public pure override returns (string memory) {
