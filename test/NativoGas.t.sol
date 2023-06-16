@@ -30,13 +30,18 @@ contract NativoGasTest is Test, Benchmark {
         vm.etch(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, address(DeployWeth.deploy()).code);
         weth = Nativo(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
 
+        
+        bytes32 _slot;
+
+        /*
+        @dev not necesary, but just in case
         // lest copy slots to proper init the contracts that were etch;
         // 10 first slots should be enough (depend on how many storage variables are in the contract)
-        bytes32 _slot;
         for (uint256 i; i < 10; i++) {
             _slot = bytes32(i);
             vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
         }
+        */
         _slot = bytes32(uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
         vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
 
@@ -51,15 +56,16 @@ contract NativoGasTest is Test, Benchmark {
             bytes32(uint256(2)),
             bytes32(0x0000000000000000000000000000000000000000000000000000000000000012)
         );
+
+
+        assertEq(nativo.name(), "Nativo Wrapped Ether");
+        assertEq(nativo.symbol(), "WETH");
+        assertEq(weth.name(), "Wrapped Ether");
+        assertEq(weth.symbol(), "WETH");
     }
 
     function testMetadata() public {
-        assertEq(nativo.name(), "Nativo Wrapped Ether");
-        assertEq(nativo.symbol(), "WETH");
-        assertEq(nativo.decimals(), 18);
-
-        assertEq(weth.name(), "Wrapped Ether");
-        assertEq(weth.symbol(), "WETH");
+        assertEq(nativo.decimals(), 18); 
         assertEq(weth.decimals(), 18);
 
         assertEq(nativo.totalSupply(), 0);

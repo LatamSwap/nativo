@@ -8,8 +8,8 @@ import {ERC1363} from "./ERC/ERC1363.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 
 contract Nativo is ERC20, ERC3156, ERC1363 {
-    string private _name;
-    string private _symbol;
+    bytes32 immutable _name;
+    bytes32 immutable _symbol;
 
     // @dev this is the treasury address, where the fees will be sent
     // this address will be define later, for now we use a arbitrary address
@@ -18,9 +18,10 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     error WithdrawFailed();
     error AddressZero();
 
-    constructor(string memory name_, string memory symbol_) {
+    constructor(bytes32 name_, bytes32 symbol_) {
         _name = name_;
         _symbol = symbol_;
+        
         init_ERC3156();
     }
 
@@ -30,12 +31,24 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
 
     /// @dev Returns the name of the token.
     function name() public view override returns (string memory) {
-        return _name;
+        return bytes32ToString(_name);
     }
 
     /// @dev Returns the symbol of the token.
     function symbol() public view override returns (string memory) {
-        return _symbol;
+        return bytes32ToString(_symbol);
+    }
+
+    function bytes32ToString(bytes32 _bytes32) internal pure returns (string memory) {
+        uint8 i = 0;
+        while(i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        bytes memory bytesArray = new bytes(i);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            bytesArray[i] = _bytes32[i];
+        }
+        return string(bytesArray);
     }
 
     fallback() external payable {
