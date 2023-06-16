@@ -21,6 +21,7 @@ contract NativoTest is Test {
         assertEq(nativo.name(), "Wrapped Native crypto", "Wrong name");
         assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
+        assertEq(nativo.totalSupply(), 0, "Wrong total supply");
     }
 
     function testDepositTo(address from, address to, uint256 amount) public {
