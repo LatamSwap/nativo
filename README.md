@@ -1,4 +1,6 @@
-![readme cover](./art/cover.png)
+<p align="center">
+  <img src="./art/cover.png" alt="readme cover"/>
+</p>
 
 
 # Nativo
