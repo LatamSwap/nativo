@@ -4,16 +4,15 @@ import {ERC20} from "./ERC20.sol";
 
 import {IERC3156FlashBorrower} from "openzeppelin/interfaces/IERC3156FlashBorrower.sol";
 import {IERC3156FlashLender} from "openzeppelin/interfaces/IERC3156FlashLender.sol";
-import {ReentrancyGuard} from "solmate/utils/ReentrancyGuard.sol";
 
 // @dev implementation of https://eips.ethereum.org/EIPS/eip-3156
 
-abstract contract ERC3156 is ERC20, IERC3156FlashLender, ReentrancyGuard {
+abstract contract ERC3156 is ERC20, IERC3156FlashLender {
+    // @dev _FLASH_MINTED_SLOT = uint256(keccak256("ERC3156_FLASHMINTED")) - 1;
+    uint256 private constant _FLASH_MINTED_SLOT = 0x3965801a1a161db0d5a8d326fe0135e2586f55ca7bc4e22ea49399d97c657530;
+
     bytes32 private constant _RETURN_VALUE = keccak256("ERC3156FlashBorrower.onFlashLoan");
     uint256 private constant _FEE_DENOMINATOR = 1000;
-    // @dev flashMinted is used to keep track of the amount of tokens minted in a flash loan
-    //      is starting in 1 to save gas
-    uint256 internal _flashMinted = 1;
 
     /**
      * @dev The loan token is not valid.
@@ -30,8 +29,27 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender, ReentrancyGuard {
      */
     error ERC3156InvalidReceiver(address receiver);
 
-    function _maxFlashLoan() private view returns (uint256) {
-        return address(this).balance + 1 - _flashMinted;
+    function init_ERC3156() internal {
+        assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
+        require(_flashMinted() == 0, "ERC3156: already initialized");
+        assembly {
+            // @dev flashMinted is used to keep track of the amount of tokens minted in a flash loan
+            //      is starting in 1 to save gas
+            sstore(_FLASH_MINTED_SLOT, 1)
+        }
+    }
+
+    function _flashMinted() internal view returns (uint256 flashMinted) {
+        assembly {
+            flashMinted := sload(_FLASH_MINTED_SLOT)
+        }
+    }
+
+    function _maxFlashLoan() private view returns (uint256 ret) {
+        assembly {
+            ret := sload(_FLASH_MINTED_SLOT)
+        }
+        ret = address(this).balance + 1 - ret;
     }
 
     /**
@@ -89,10 +107,13 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender, ReentrancyGuard {
     // slither-disable-next-line reentrancy-no-eth
     function flashLoan(IERC3156FlashBorrower receiver, address token, uint256 amount, bytes calldata data)
         external
-        virtual
-        nonReentrant
         returns (bool)
     {
+        uint256 flashMinted = _flashMinted();
+        if (flashMinted != 1) {
+            revert("ERC3156: reentrancy not allowed");
+        }
+
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);
         }
@@ -104,7 +125,9 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender, ReentrancyGuard {
         }
 
         // update flashMinted amount
-        _flashMinted += amount;
+        assembly {
+            sstore(_FLASH_MINTED_SLOT, add(flashMinted, amount))
+        }
 
         // @dev fee is 0,1%
         uint256 fee = amount / _FEE_DENOMINATOR;
@@ -115,7 +138,9 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender, ReentrancyGuard {
         }
 
         // reset flashMinted amount
-        _flashMinted = 1;
+        assembly {
+            sstore(_FLASH_MINTED_SLOT, 0x01)
+        }
 
         address flashFeeReceiver = _flashFeeReceiver();
         _spendAllowance(address(receiver), address(this), amount + fee);

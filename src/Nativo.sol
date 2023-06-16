@@ -21,9 +21,10 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     constructor(string memory name_, string memory symbol_) {
         _name = name_;
         _symbol = symbol_;
+        init_ERC3156();
     }
 
-    function _flashFeeReceiver() internal override view returns (address) {
+    function _flashFeeReceiver() internal view override returns (address) {
         return treasury;
     }
 
@@ -46,6 +47,15 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         _mint(msg.sender, msg.value);
     }
 
+    function recoverLoss(address account) public {
+        require(account == address(this) || account <= address(uint160(uint256(0xdead))), "Invalid account");
+        // TODO
+        // should we add access control? perhaps
+        // get balance of account
+        // set account balance to 0
+        // add balance to treasury balance
+    }
+
     function deposit() external payable {
         _mint(msg.sender, msg.value);
     }
@@ -57,10 +67,16 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     function withdraw(uint256 amount) public {
         _burn(msg.sender, amount);
 
-        // if we use function _transferEth this will be more expenseive
+        // if we use function transferEth func this will be more expensive
         // because it will need an extra variable to store msg.sender
-        (bool sucess,) = msg.sender.call{value: amount}("");
-        if (!sucess) revert WithdrawFailed();
+        bool success;
+
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Transfer the ETH and store if it succeeded or not.
+            success := call(gas(), caller(), amount, 0, 0, 0, 0)
+        }
+        if (!success) revert WithdrawFailed();
     }
 
     function withdrawTo(address to, uint256 amount) external {
@@ -79,7 +95,6 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     function totalSupply() external view returns (uint256) {
-        return address(this).balance + 1 - _flashMinted;
+        return address(this).balance + 1 - _flashMinted();
     }
-
 }

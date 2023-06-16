@@ -32,10 +32,13 @@ contract NativoGasTest is Test, Benchmark {
 
         // lest copy slots to proper init the contracts that were etch;
         // 10 first slots should be enough (depend on how many storage variables are in the contract)
+        bytes32 _slot;
         for (uint256 i; i < 10; i++) {
-            bytes32 _slot = bytes32(i);
+            _slot = bytes32(i);
             vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
         }
+        _slot = bytes32(uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
+        vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
 
         vm.store(address(weth), bytes32(0), bytes32(0x577261707065642045746865720000000000000000000000000000000000001a));
         vm.store(
