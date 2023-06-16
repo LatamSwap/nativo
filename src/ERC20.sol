@@ -4,6 +4,8 @@ pragma solidity ^0.8.4;
 // This is a modified version of solady ERC20 implementation 
 // https://github.com/Vectorized/solady/blob/c51948c6789a28aa64464b86eacac45e2fdf0373/src/tokens/ERC20.sol
 
+// Modifications:
+// Remove `totalSupply`
 
 
 /// @notice Simple ERC20 + EIP-2612 implementation.
@@ -19,9 +21,6 @@ abstract contract ERC20 {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                       CUSTOM ERRORS                        */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /// @dev The total supply has overflowed.
-    error TotalSupplyOverflow();
 
     /// @dev The allowance has overflowed.
     error AllowanceOverflow();
@@ -109,14 +108,6 @@ abstract contract ERC20 {
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
     /*                           ERC20                            */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /// @dev Returns the amount of tokens in existence.
-    function totalSupply() public view virtual returns (uint256 result) {
-        /// @solidity memory-safe-assembly
-        assembly {
-            result := sload(_TOTAL_SUPPLY_SLOT)
-        }
-    }
 
     /// @dev Returns the amount of tokens owned by `owner`.
     function balanceOf(address owner) public view virtual returns (uint256 result) {
@@ -432,15 +423,6 @@ abstract contract ERC20 {
         _beforeTokenTransfer(address(0), to, amount);
         /// @solidity memory-safe-assembly
         assembly {
-            let totalSupplyBefore := sload(_TOTAL_SUPPLY_SLOT)
-            let totalSupplyAfter := add(totalSupplyBefore, amount)
-            // Revert if the total supply overflows.
-            if lt(totalSupplyAfter, totalSupplyBefore) {
-                mstore(0x00, 0xe5cfe957) // `TotalSupplyOverflow()`.
-                revert(0x1c, 0x04)
-            }
-            // Store the updated total supply.
-            sstore(_TOTAL_SUPPLY_SLOT, totalSupplyAfter)
             // Compute the balance slot and load its value.
             mstore(0x0c, _BALANCE_SLOT_SEED)
             mstore(0x00, to)
@@ -477,8 +459,6 @@ abstract contract ERC20 {
             }
             // Subtract and store the updated balance.
             sstore(fromBalanceSlot, sub(fromBalance, amount))
-            // Subtract and store the updated total supply.
-            sstore(_TOTAL_SUPPLY_SLOT, sub(sload(_TOTAL_SUPPLY_SLOT), amount))
             // Emit the {Transfer} event.
             mstore(0x00, amount)
             log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), 0)
