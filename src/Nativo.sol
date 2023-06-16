@@ -7,6 +7,10 @@ contract Nativo is ERC20 {
     string private _name;
     string private _symbol;
 
+    // @dev this is the treasury address, where the fees will be sent
+    // this address will be define later, for now we use a arbitrary address
+    address public constant treasury = 0x00000000fFFffDB6Fc1F34ac4aD25dd9eF7031eF;
+
     error WithdrawFailed();
     error AddressZero();
 
