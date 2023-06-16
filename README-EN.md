@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="./art/cover.png" alt="readme cover"/>
+  <a href="#nativo">
+    <img src="./art/cover.png" alt="readme cover"/>
+  </a>
 </p>
 
 # Nativo
