@@ -140,7 +140,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         amount = bound(amount, 0, address(this).balance);
         _pay(currentActor, amount);
 
-        uint256 balancePrev =nativo.balanceOf(_actors.rand(actorTo));
+        uint256 balancePrev = nativo.balanceOf(_actors.rand(actorTo));
 
         vm.prank(currentActor);
         nativo.depositTo{value: amount}(_actors.rand(actorTo));
@@ -148,7 +148,11 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         ghost_depositSum += amount;
     }
 
-    function withdrawTo(uint256 actorSeed, uint256 actorTo, uint256 amount) public useActor(actorSeed) countCall("withdrawTo") {
+    function withdrawTo(uint256 actorSeed, uint256 actorTo, uint256 amount)
+        public
+        useActor(actorSeed)
+        countCall("withdrawTo")
+    {
         amount = bound(amount, 0, nativo.balanceOf(currentActor));
         if (amount == 0) ghost_zeroWithdrawals++;
 

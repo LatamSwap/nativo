@@ -8,14 +8,11 @@ import {Handler, ETH_SUPPLY} from "./handlers/Handler.sol";
 
 import {Nativo} from "src/Nativo.sol";
 
-
-
 contract NativoInvariants is Test {
     Nativo public nativo;
     Handler public handler;
 
     function setUp() public {
-
         // name and symbol depend on the blockchain we are deploying
         nativo = new Nativo("Wrapped Native crypto", "Wany");
         handler = new Handler(nativo);
@@ -29,7 +26,7 @@ contract NativoInvariants is Test {
         selectors[5] = Handler.transferFrom.selector;
         selectors[6] = Handler.depositTo.selector;
         selectors[7] = Handler.withdrawTo.selector;
-        
+
         //selectors[6] = Handler.forcePush.selector;
 
         targetSelector(FuzzSelector({addr: address(handler), selectors: selectors}));
