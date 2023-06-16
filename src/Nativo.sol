@@ -5,6 +5,8 @@ import {ERC20} from "./ERC/ERC20.sol";
 import {ERC3156} from "./ERC/ERC3156.sol";
 import {ERC1363} from "./ERC/ERC1363.sol";
 
+import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
+
 contract Nativo is ERC20, ERC3156, ERC1363 {
     string private _name;
     string private _symbol;
@@ -49,8 +51,6 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     function depositTo(address to) external payable {
-        if (to == address(0)) revert AddressZero();
-
         _mint(to, msg.value);
     }
 
@@ -67,7 +67,7 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         if (to == address(0)) revert AddressZero();
 
         _burn(msg.sender, amount);
-        _transferEth(to, amount);
+        SafeTransferLib.safeTransferETH(to, amount);
     }
 
     function withdrawFrom(address from, address to, uint256 amount) external {
@@ -75,15 +75,11 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
 
         _spendAllowance(from, msg.sender, amount);
         _burn(from, amount);
-        _transferEth(to, amount);
+        SafeTransferLib.safeTransferETH(to, amount);
     }
 
     function totalSupply() external view returns (uint256) {
         return address(this).balance + 1 - _flashMinted;
     }
 
-    function _transferEth(address to, uint256 amount) private {
-        (bool sucess,) = to.call{value: amount}("");
-        if (!sucess) revert WithdrawFailed();
-    }
 }
