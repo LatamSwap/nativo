@@ -28,13 +28,8 @@ contract NativoTest is Test {
         vm.deal(from, amount);
         vm.prank(from);
 
-        if (to == address(0)) {
-            vm.expectRevert();
-            nativo.depositTo{value: amount}(to);
-        } else {
-            nativo.depositTo{value: amount}(to);
-            assertEq(nativo.balanceOf(to), amount);
-        }
+        nativo.depositTo{value: amount}(to);
+        assertEq(nativo.balanceOf(to), amount);
     }
 
     function testDepositAndWithdraw(uint256 amount, uint256 remove, uint256 remove2, address removeTo) public {
