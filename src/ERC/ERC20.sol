@@ -9,8 +9,7 @@ pragma solidity ^0.8.4;
 // Remove hooks: `_beforeTokenTransfer` and `_beforeTokenTransfer`
 // Use balances in a fixed slot portion to avoid keccak256 hash calculation;
 // ```
-//    uint256 private constant _BALANCE_SLOT_MASK = 0x87a211a2000000000000000000000000000000000000000000;
-//    let balanceSlot := or(_BALANCE_SLOT_MASK, owner)
+//    let balanceSlot := owner
 // ```
 
 /// @notice Simple ERC20 + EIP-2612 implementation.
@@ -56,7 +55,7 @@ abstract contract ERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
-    uint256 private constant _TRANSFER_EVENT_SIGNATURE =
+    uint256 internal constant _TRANSFER_EVENT_SIGNATURE =
         0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
 
     /// @dev `keccak256(bytes("Approval(address,address,uint256)"))`.
@@ -67,17 +66,7 @@ abstract contract ERC20 {
     /*                          STORAGE                           */
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
-    /// @dev The balance slot of `owner` is given by:
-    /// `slot = _BALANCE_SLOT_SEED << 168 | uint256(uint160(owner))`
-    /// ```
-    ///     let balanceSlot := or(_BALANCE_SLOT_MASK, owner)
-    ///
-    /// ```
-    /// This is a hack to avoid computing the keccak256 hash of balance
-    /// Balances will be stored in the slots;
-    /// [0x0000000000000021e88468800000000000000000000000000000000000000000, 0x0000000000000021e8846880ffffffffffffffffffffffffffffffffffffffff]
-    // uint256 private constant _BALANCE_SLOT_SEED = 0x87a211a2;
-    uint256 private constant _BALANCE_SLOT_MASK = 0x87a211a2000000000000000000000000000000000000000000;
+    /// @dev The balance slot of `owner` is the address
 
     /// @dev The allowance slot of (`owner`, `spender`) is given by:
     /// ```
@@ -86,7 +75,7 @@ abstract contract ERC20 {
     ///     mstore(0x00, owner)
     ///     let allowanceSlot := keccak256(0x0c, 0x34)
     /// ```
-    uint256 private constant _ALLOWANCE_SLOT_SEED = 0x7f5e9f20;
+    uint256 internal constant _ALLOWANCE_SLOT_SEED = 0x7f5e9f20;
 
     /// @dev The nonce slot of `owner` is given by:
     /// ```
@@ -119,7 +108,9 @@ abstract contract ERC20 {
     function balanceOf(address owner) public view virtual returns (uint256 result) {
         /// @solidity memory-safe-assembly
         assembly {
-            result := sload(or(_BALANCE_SLOT_MASK, owner))
+            //result := sload(or(_BALANCE_SLOT_MASK, owner))
+            owner :=  shr(96, shl(96, owner))
+            result:= sload(owner)
         }
     }
 
@@ -217,24 +208,23 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            let fromBalanceSlot := or(_BALANCE_SLOT_MASK, caller())
-            let fromBalance := sload(fromBalanceSlot)
+            let fromBalance := sload(caller())
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
                 mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             // Subtract and store the updated balance.
-            sstore(fromBalanceSlot, sub(fromBalance, amount))
+            sstore(caller(), sub(fromBalance, amount))
             // Compute the balance slot of `to`.
-            let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
+            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
-            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))
+            sstore(to, add(sload(to), amount))
             // Emit the {Transfer} event.
             mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), shr(96, shl(96, to)))
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), to)
         }
         return true;
     }
@@ -268,24 +258,25 @@ abstract contract ERC20 {
                 sstore(allowanceSlot, sub(allowance_, amount))
             }
             // Compute the balance slot and load its value.
-            let fromBalanceSlot := or(_BALANCE_SLOT_MASK, from)
-            let fromBalance := sload(fromBalanceSlot)
+            from := shr(96, from_)
+            let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
                 mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             // Subtract and store the updated balance.
-            sstore(fromBalanceSlot, sub(fromBalance, amount))
+            sstore(from, sub(fromBalance, amount))
+            
             // Compute the balance slot of `to`.
-            let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
+            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
-            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))
+            sstore(to, add(sload(to), amount))
             // Emit the {Transfer} event.
             mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), shr(96, shl(96, to)))
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, to)
         }
         return true;
     }
@@ -408,12 +399,12 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
+            to :=  shr(96, shl(96, to))
             // Add and store the updated balance.
-            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))
+            sstore(to, add(sload(to), amount))
             // Emit the {Transfer} event.
             mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, shr(96, shl(96, to)))
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, to)
         }
     }
 
@@ -428,18 +419,18 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            let fromBalanceSlot := or(_BALANCE_SLOT_MASK, from)
-            let fromBalance := sload(fromBalanceSlot)
+            from :=  shr(96, shl(96, from))
+            let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
                 mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             // Subtract and store the updated balance.
-            sstore(fromBalanceSlot, sub(fromBalance, amount))
+            sstore(from, sub(fromBalance, amount))
             // Emit the {Transfer} event.
             mstore(0x00, amount)
-            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), 0)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, from, 0)
         }
     }
 
@@ -452,24 +443,24 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            let fromBalanceSlot := or(_BALANCE_SLOT_MASK, from)
-            let fromBalance := sload(fromBalanceSlot)
+            from := shr(96, shl(96, from))
+            let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
                 mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             // Subtract and store the updated balance.
-            sstore(fromBalanceSlot, sub(fromBalance, amount))
+            sstore(from, sub(fromBalance, amount))
             // Compute the balance slot of `to`.
-            let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
+            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
-            sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))
+            sstore(to, add(sload(to), amount))
             // Emit the {Transfer} event.
             mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), shr(96, shl(96, to)))
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, to)
         }
     }
 

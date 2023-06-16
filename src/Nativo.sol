@@ -40,7 +40,7 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     function bytes32ToString(bytes32 _bytes32) internal pure returns (string memory) {
-        uint8 i = 0;
+        uint256 i;
         while(i < 32 && _bytes32[i] != 0) {
             i++;
         }
@@ -57,7 +57,18 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     receive() external payable {
-        _mint(msg.sender, msg.value);
+        // _mint(msg.sender, msg.value);
+        /// @dev this is cheaper, avoiding extra variable for callvalue() and caller()
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the balance slot and load its value.
+            // let toBalanceSlot := caller()
+            // Add and store the updated balance.
+            sstore(caller(), add(sload(caller()), callvalue()))
+            // Emit the {Transfer} event.
+            mstore(0x20, callvalue())
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, caller())
+        }
     }
 
     function recoverLoss(address account) public {
@@ -70,15 +81,53 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     function deposit() external payable {
-        _mint(msg.sender, msg.value);
+        // _mint(msg.sender, msg.value);
+        /// @dev this is cheaper, avoiding extra variable for callvalue() and caller()
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the balance slot and load its value.
+            //let toBalanceSlot := caller()
+            // Add and store the updated balance.
+            sstore(caller(), add(sload(caller()), callvalue()))
+            // Emit the {Transfer} event.
+            mstore(0x20, callvalue())
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, caller())
+        }
     }
 
     function depositTo(address to) external payable {
-        _mint(to, msg.value);
+        // _mint(to, msg.value);
+        /// @dev this is cheaper, avoiding extra variable for callvalue() and caller()
+        /// @solidity memory-safe-assembly
+        assembly {
+            // clean `to`
+            to := shr(96, shl(96, to))
+            // Compute the balance slot and load its value.
+            // let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
+            // Add and store the updated balance.
+            sstore(to, add(sload(to), callvalue()))
+            // Emit the {Transfer} event.
+            mstore(0x20, callvalue())
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, to)
+        }
     }
 
     function withdraw(uint256 amount) public {
-        _burn(msg.sender, amount);
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the balance slot and load its value.
+            let fromBalance := sload(caller())
+            // Revert if insufficient balance.
+            if gt(amount, fromBalance) {
+                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
+                revert(0x1c, 0x04)
+            }
+            // Subtract and store the updated balance.
+            sstore(caller(), sub(fromBalance, amount))
+            // Emit the {Transfer} event.
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), 0)
+        }
 
         // if we use function transferEth func this will be more expensive
         // because it will need an extra variable to store msg.sender
@@ -95,19 +144,56 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     function withdrawTo(address to, uint256 amount) external {
         if (to == address(0)) revert AddressZero();
 
-        _burn(msg.sender, amount);
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the balance slot and load its value.
+            let fromBalance := sload(caller())
+            // Revert if insufficient balance.
+            if gt(amount, fromBalance) {
+                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
+                revert(0x1c, 0x04)
+            }
+            // Subtract and store the updated balance.
+            sstore(caller(), sub(fromBalance, amount))
+            // Emit the {Transfer} event.
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), 0)
+        }
         SafeTransferLib.safeTransferETH(to, amount);
     }
 
     function withdrawFrom(address from, address to, uint256 amount) external {
         if (to == address(0)) revert AddressZero();
 
-        _spendAllowance(from, msg.sender, amount);
+        // _spendAllowance(from, msg.sender, amount);
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the allowance slot and load its value.
+            mstore(0x20, caller())
+            mstore(0x0c, _ALLOWANCE_SLOT_SEED)
+            mstore(0x00, from)
+            let allowanceSlot := keccak256(0x0c, 0x34)
+            let allowance_ := sload(allowanceSlot)
+            // If the allowance is not the maximum uint256 value.
+            if iszero(eq(allowance_, not(0))) {
+                // Revert if the amount to be transferred exceeds the allowance.
+                if gt(amount, allowance_) {
+                    mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
+                    revert(0x1c, 0x04)
+                }
+                // Subtract and store the updated allowance.
+                sstore(allowanceSlot, sub(allowance_, amount))
+            }
+        }
+
         _burn(from, amount);
         SafeTransferLib.safeTransferETH(to, amount);
     }
 
-    function totalSupply() external view returns (uint256) {
-        return address(this).balance + 1 - _flashMinted();
+    function totalSupply() external view returns (uint256 totalSupply_) {
+        totalSupply_ = address(this).balance + 1;
+        assembly{
+            totalSupply_ := sub(totalSupply_, sload(_FLASH_MINTED_SLOT))
+        }
     }
 }

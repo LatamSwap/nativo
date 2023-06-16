@@ -9,7 +9,7 @@ import {IERC3156FlashLender} from "openzeppelin/interfaces/IERC3156FlashLender.s
 
 abstract contract ERC3156 is ERC20, IERC3156FlashLender {
     // @dev _FLASH_MINTED_SLOT = uint256(keccak256("ERC3156_FLASHMINTED")) - 1;
-    uint256 private constant _FLASH_MINTED_SLOT = 0x3965801a1a161db0d5a8d326fe0135e2586f55ca7bc4e22ea49399d97c657530;
+    uint256 internal constant _FLASH_MINTED_SLOT = 0x3965801a1a161db0d5a8d326fe0135e2586f55ca7bc4e22ea49399d97c657530;
 
     bytes32 private constant _RETURN_VALUE = keccak256("ERC3156FlashBorrower.onFlashLoan");
     uint256 private constant _FEE_DENOMINATOR = 1000;
