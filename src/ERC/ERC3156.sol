@@ -111,9 +111,8 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
         returns (bool)
     {
         uint256 flashMinted = _flashMinted();
-        if (flashMinted != 1) {
-            revert("ERC3156: reentrancy not allowed");
-        }
+        if (flashMinted != 1) revert("ERC3156: reentrancy not allowed");
+        if (amount < 1000) revert("ERC3156: minimum loan amount is 1000 wei");
 
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);

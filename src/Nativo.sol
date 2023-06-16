@@ -71,14 +71,26 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         }
     }
 
-    function recoverLoss(address account) public {
+    function recoverNativo(address account) external {
         require(account == address(this) || account <= address(uint160(uint256(0xdead))), "Invalid account");
+        
         // TODO
         // should we add access control? perhaps
-        // get balance of account
-        // set account balance to 0
-        // add balance to treasury balance
+
+        uint256 recoverAmount;
+        /// @solidity memory-safe-assembly
+        assembly {
+            account := shr(96, shl(96, account))
+            recoverAmount := sload(account)
+            sstore(account, 0)
+            let treasuryBalance := sload(treasury)
+            sstore(treasury, add(treasuryBalance, recoverAmount))
+        }
+
+        // tell that we recover some nativo from account
+        emit RecoverNativo(account, recoverAmount);
     }
+    event RecoverNativo(address indexed account, uint256 amount);
 
     function deposit() external payable {
         // _mint(msg.sender, msg.value);
