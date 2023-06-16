@@ -210,10 +210,10 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
 
     function totalSupply() external view returns (uint256 totalSupply_) {
         assembly{
-            // @todo review if this can overflow
             totalSupply_ := sub(
-                add(selfbalance(), 0x01), 
-                sload(_FLASH_MINTED_SLOT))
+                add(selfbalance(), sload(_FLASH_MINTED_SLOT)),
+                0x01
+            )
         }
     }
 }
