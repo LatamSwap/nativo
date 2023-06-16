@@ -45,7 +45,7 @@ contract NativoInvariants is Test {
         assertEq(ETH_SUPPLY, address(handler).balance + nativo.totalSupply());
     }
 
-    // The Nativp contract's Ether balance should always be
+    // The Nativo contract's Ether balance should always be
     // at least as much as the sum of individual deposits
     function invariant_solvencyDeposits() public {
         assertEq(
@@ -54,7 +54,7 @@ contract NativoInvariants is Test {
         );
     }
 
-    // The Nativp contract's Ether balance should always be
+    // The Nativo contract's Ether balance should always be
     // at least as much as the sum of individual balances
     function invariant_solvencyBalances() public {
         uint256 sumOfBalances = handler.reduceActors(0, this.accumulateBalance);
@@ -66,7 +66,7 @@ contract NativoInvariants is Test {
     }
 
     // No individual account balance can exceed the
-    // Nativp totalSupply().
+    // Nativo totalSupply().
     function invariant_depositorBalances() public {
         handler.forEachActor(this.assertAccountBalanceLteTotalSupply);
     }
