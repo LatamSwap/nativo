@@ -49,6 +49,7 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
         assembly {
             ret := sload(_FLASH_MINTED_SLOT)
         }
+        // +1 is because _flashMinted is starting in 1
         ret = address(this).balance + 1 - ret;
     }
 
@@ -118,7 +119,6 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
             revert ERC3156UnsupportedToken(token);
         }
 
-        // +1 is because _flashMinted is starting in 1
         uint256 maxLoan = _maxFlashLoan();
         if (amount > maxLoan) {
             revert ERC3156ExceededMaxLoan(maxLoan);
