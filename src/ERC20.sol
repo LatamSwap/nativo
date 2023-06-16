@@ -6,7 +6,7 @@ pragma solidity ^0.8.4;
 
 // Modifications:
 // Remove `totalSupply`
-
+// Remove hooks: `_beforeTokenTransfer` and `_beforeTokenTransfer`
 
 /// @notice Simple ERC20 + EIP-2612 implementation.
 /// @author Solady (https://github.com/vectorized/solady/blob/main/src/tokens/ERC20.sol)
@@ -212,7 +212,6 @@ abstract contract ERC20 {
     ///
     /// Emits a {Transfer} event.
     function transfer(address to, uint256 amount) public virtual returns (bool) {
-        _beforeTokenTransfer(msg.sender, to, amount);
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
@@ -238,7 +237,6 @@ abstract contract ERC20 {
             mstore(0x20, amount)
             log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, caller(), shr(96, mload(0x0c)))
         }
-        _afterTokenTransfer(msg.sender, to, amount);
         return true;
     }
 
@@ -252,7 +250,6 @@ abstract contract ERC20 {
     ///
     /// Emits a {Transfer} event.
     function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
-        _beforeTokenTransfer(from, to, amount);
         /// @solidity memory-safe-assembly
         assembly {
             let from_ := shl(96, from)
@@ -293,7 +290,6 @@ abstract contract ERC20 {
             mstore(0x20, amount)
             log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, from_), shr(96, mload(0x0c)))
         }
-        _afterTokenTransfer(from, to, amount);
         return true;
     }
 
@@ -417,7 +413,6 @@ abstract contract ERC20 {
     ///
     /// Emits a {Transfer} event.
     function _mint(address to, uint256 amount) internal virtual {
-        _beforeTokenTransfer(address(0), to, amount);
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
@@ -430,7 +425,6 @@ abstract contract ERC20 {
             mstore(0x20, amount)
             log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0, shr(96, mload(0x0c)))
         }
-        _afterTokenTransfer(address(0), to, amount);
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -441,7 +435,6 @@ abstract contract ERC20 {
     ///
     /// Emits a {Transfer} event.
     function _burn(address from, uint256 amount) internal virtual {
-        _beforeTokenTransfer(from, address(0), amount);
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
@@ -460,7 +453,6 @@ abstract contract ERC20 {
             mstore(0x00, amount)
             log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), 0)
         }
-        _afterTokenTransfer(from, address(0), amount);
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -469,7 +461,6 @@ abstract contract ERC20 {
 
     /// @dev Moves `amount` of tokens from `from` to `to`.
     function _transfer(address from, address to, uint256 amount) internal virtual {
-        _beforeTokenTransfer(from, to, amount);
         /// @solidity memory-safe-assembly
         assembly {
             let from_ := shl(96, from)
@@ -494,8 +485,7 @@ abstract contract ERC20 {
             // Emit the {Transfer} event.
             mstore(0x20, amount)
             log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, from_), shr(96, mload(0x0c)))
-        }
-        _afterTokenTransfer(from, to, amount);
+        }      
     }
 
     /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
@@ -541,16 +531,4 @@ abstract contract ERC20 {
             log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, shr(96, owner_), shr(96, mload(0x2c)))
         }
     }
-
-    /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-    /*                     HOOKS TO OVERRIDE                      */
-    /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-
-    /// @dev Hook that is called before any transfer of tokens.
-    /// This includes minting and burning.
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual {}
-
-    /// @dev Hook that is called after any transfer of tokens.
-    /// This includes minting and burning.
-    function _afterTokenTransfer(address from, address to, uint256 amount) internal virtual {}
 }
