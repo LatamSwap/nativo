@@ -285,7 +285,7 @@ abstract contract ERC20 {
             sstore(toBalanceSlot, add(sload(toBalanceSlot), amount))
             // Emit the {Transfer} event.
             mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, from_), shr(96, shl(96, to)))
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, shr(96, shl(96, from)), shr(96, shl(96, to)))
         }
         return true;
     }
