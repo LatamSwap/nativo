@@ -71,11 +71,17 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         }
     }
 
+
+    function recoverERC20(address token, uint256 amount) public {
+        require(token != address(this), "Cannot recover nativo");
+        require(msg.sender == treasury, "!treasury");
+        ERC20(token).transfer(treasury, amount);
+    }
+
     function recoverNativo(address account) external {
+        require(msg.sender == treasury, "!treasury");
+
         require(account == address(this) || account <= address(uint160(uint256(0xdead))), "Invalid account");
-        
-        // TODO
-        // should we add access control? perhaps
 
         uint256 recoverAmount;
         /// @solidity memory-safe-assembly
@@ -203,9 +209,11 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
     }
 
     function totalSupply() external view returns (uint256 totalSupply_) {
-        totalSupply_ = address(this).balance + 1;
         assembly{
-            totalSupply_ := sub(totalSupply_, sload(_FLASH_MINTED_SLOT))
+            // @todo review if this can overflow
+            totalSupply_ := sub(
+                add(selfbalance(), 0x01), 
+                sload(_FLASH_MINTED_SLOT))
         }
     }
 }
