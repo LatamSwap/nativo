@@ -30,7 +30,6 @@ contract NativoGasTest is Test, Benchmark {
         vm.etch(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, address(DeployWeth.deploy()).code);
         weth = Nativo(payable(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2));
 
-        
         bytes32 _slot;
 
         /*
@@ -57,7 +56,6 @@ contract NativoGasTest is Test, Benchmark {
             bytes32(0x0000000000000000000000000000000000000000000000000000000000000012)
         );
 
-
         assertEq(nativo.name(), "Nativo Wrapped Ether");
         assertEq(nativo.symbol(), "WETH");
         assertEq(weth.name(), "Wrapped Ether");
@@ -65,7 +63,7 @@ contract NativoGasTest is Test, Benchmark {
     }
 
     function testMetadata() public {
-        assertEq(nativo.decimals(), 18); 
+        assertEq(nativo.decimals(), 18);
         assertEq(weth.decimals(), 18);
 
         assertEq(nativo.totalSupply(), 0);
