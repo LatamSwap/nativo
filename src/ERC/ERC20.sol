@@ -105,11 +105,9 @@ abstract contract ERC20 {
     /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
     /// @dev Returns the amount of tokens owned by `owner`.
-    function balanceOf(address owner) public view virtual returns (uint256 result) {
+    function balanceOf(address owner) external view returns (uint256 result) {
         /// @solidity memory-safe-assembly
         assembly {
-            //result := sload(or(_BALANCE_SLOT_MASK, owner))
-            owner :=  shr(96, shl(96, owner))
             result:= sload(owner)
         }
     }
@@ -138,7 +136,7 @@ abstract contract ERC20 {
             sstore(keccak256(0x0c, 0x34), amount)
             // Emit the {Approval} event.
             mstore(0x00, amount)
-            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), shr(96, mload(0x2c)))
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), spender)
         }
         return true;
     }
@@ -166,7 +164,7 @@ abstract contract ERC20 {
             sstore(allowanceSlot, allowanceAfter)
             // Emit the {Approval} event.
             mstore(0x00, allowanceAfter)
-            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), shr(96, mload(0x2c)))
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), spender)
         }
         return true;
     }
@@ -174,7 +172,7 @@ abstract contract ERC20 {
     /// @dev Atomically decreases the allowance granted to `spender` by the caller.
     ///
     /// Emits a {Approval} event.
-    function decreaseAllowance(address spender, uint256 difference) public virtual returns (bool) {
+    function decreaseAllowance(address spender, uint256 difference) public returns (bool) {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the allowance slot and load its value.
@@ -193,7 +191,7 @@ abstract contract ERC20 {
             sstore(allowanceSlot, allowanceAfter)
             // Emit the {Approval} event.
             mstore(0x00, allowanceAfter)
-            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), shr(96, mload(0x2c)))
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), spender)
         }
         return true;
     }
@@ -217,7 +215,6 @@ abstract contract ERC20 {
             // Subtract and store the updated balance.
             sstore(caller(), sub(fromBalance, amount))
             // Compute the balance slot of `to`.
-            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
@@ -258,7 +255,6 @@ abstract contract ERC20 {
                 sstore(allowanceSlot, sub(allowance_, amount))
             }
             // Compute the balance slot and load its value.
-            from := shr(96, from_)
             let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
@@ -269,7 +265,6 @@ abstract contract ERC20 {
             sstore(from, sub(fromBalance, amount))
             
             // Compute the balance slot of `to`.
-            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
@@ -302,8 +297,7 @@ abstract contract ERC20 {
     ///
     /// Emits a {Approval} event.
     function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
-        public
-        virtual
+        external
     {
         bytes32 domainSeparator = DOMAIN_SEPARATOR();
         /// @solidity memory-safe-assembly
@@ -315,9 +309,6 @@ abstract contract ERC20 {
                 mstore(0x00, 0x1a15a3cc) // `PermitExpired()`.
                 revert(0x1c, 0x04)
             }
-            // Clean the upper 96 bits.
-            owner := shr(96, shl(96, owner))
-            spender := shr(96, shl(96, spender))
             // Compute the nonce slot and load its value.
             mstore(0x0c, _NONCES_SLOT_SEED)
             mstore(0x00, owner)
@@ -399,7 +390,6 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            to :=  shr(96, shl(96, to))
             // Add and store the updated balance.
             sstore(to, add(sload(to), amount))
             // Emit the {Transfer} event.
@@ -419,7 +409,6 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            from :=  shr(96, shl(96, from))
             let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
@@ -443,7 +432,6 @@ abstract contract ERC20 {
         /// @solidity memory-safe-assembly
         assembly {
             // Compute the balance slot and load its value.
-            from := shr(96, shl(96, from))
             let fromBalance := sload(from)
             // Revert if insufficient balance.
             if gt(amount, fromBalance) {
@@ -453,7 +441,6 @@ abstract contract ERC20 {
             // Subtract and store the updated balance.
             sstore(from, sub(fromBalance, amount))
             // Compute the balance slot of `to`.
-            to :=  shr(96, shl(96, to))
             // Add and store the updated balance of `to`.
             // Will not overflow because the sum of all user balances
             // cannot exceed the maximum uint256 value.
@@ -504,7 +491,7 @@ abstract contract ERC20 {
             sstore(keccak256(0x0c, 0x34), amount)
             // Emit the {Approval} event.
             mstore(0x00, amount)
-            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, shr(96, owner_), shr(96, mload(0x2c)))
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, owner, spender)
         }
     }
 }

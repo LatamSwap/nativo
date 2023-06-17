@@ -86,7 +86,6 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         uint256 recoverAmount;
         /// @solidity memory-safe-assembly
         assembly {
-            account := shr(96, shl(96, account))
             recoverAmount := sload(account)
             sstore(account, 0)
             let treasuryBalance := sload(treasury)
@@ -119,7 +118,6 @@ contract Nativo is ERC20, ERC3156, ERC1363 {
         /// @solidity memory-safe-assembly
         assembly {
             // clean `to`
-            to := shr(96, shl(96, to))
             // Compute the balance slot and load its value.
             // let toBalanceSlot := or(_BALANCE_SLOT_MASK, to)
             // Add and store the updated balance.
