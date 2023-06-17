@@ -140,7 +140,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     fallback() external payable {
-        revert("not implemented");
+        revert("!implemented");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -179,6 +179,10 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         /// @solidity memory-safe-assembly
         assembly {
             recoverAmount := sload(account)
+            if iszero(recoverAmount) {
+                mstore(0x00, 0x750b219c) // 0x750b219c = WithdrawFailed()
+                revert(0x1c, 0x04)
+            }
             sstore(account, 0)
             let treasuryBalance := sload(treasury)
             sstore(treasury, add(treasuryBalance, recoverAmount))

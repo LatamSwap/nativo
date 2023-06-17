@@ -24,6 +24,34 @@ contract NativoTest is Test {
         assertEq(nativo.totalSupply(), 0, "Wrong total supply");
     }
 
+    function testCantWithdraw() external {
+        bool success;
+        (success,) = address(nativo).call{value: 1 ether}("!implemented");
+        assertFalse(success, "Should have reverted");
+
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have succeeded");
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have succeeded");
+
+        assertEq(address(nativo).balance, 1 ether);
+        assertEq(nativo.totalSupply(), 1 ether);
+        assertEq(nativo.balanceOf(address(this)), 1 ether);
+
+        // contract cant receive ether, doesnt have a fallback function
+        vm.expectRevert();
+        nativo.withdraw(0.5 ether);
+
+        // contract cant receive ether, doesnt have a fallback function
+        vm.expectRevert();
+        nativo.withdrawTo(address(this), 0.5 ether);
+
+        nativo.withdrawTo(address(0xc0ffe), 0.5 ether);
+
+        vm.expectRevert();
+        nativo.withdrawTo(address(0xc0ffe), 1.5 ether);
+    }
+
     function testDepositTo(address from, address to, uint256 amount) public {
         vm.assume(from != address(0));
         vm.deal(from, amount);

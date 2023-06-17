@@ -172,7 +172,6 @@ contract Erc20Test is Test {
         token.mint(from, 1e18);
         assertEq(token.balanceOf(from), 1e18);
 
-
         vm.prank(from);
         token.approve(address(this), type(uint256).max);
 
@@ -251,7 +250,6 @@ contract Erc20Test is Test {
     function testFailPermitBadDeadline() public {
         (address owner, uint256 privateKey) = makeAddrAndKey("owner");
 
-
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             privateKey,
             keccak256(
@@ -288,7 +286,6 @@ contract Erc20Test is Test {
     function testFailPermitReplay() public {
         (address owner, uint256 privateKey) = makeAddrAndKey("owner");
 
-
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(
             privateKey,
             keccak256(
@@ -310,11 +307,7 @@ contract Erc20Test is Test {
         assertEq(token.balanceOf(from), amount);
     }
 
-    function testBurn(
-        address from,
-        uint256 mintAmount,
-        uint256 burnAmount
-    ) public {
+    function testBurn(address from, uint256 mintAmount, uint256 burnAmount) public {
         burnAmount = bound(burnAmount, 0, mintAmount);
 
         token.mint(from, mintAmount);
@@ -342,11 +335,7 @@ contract Erc20Test is Test {
         }
     }
 
-    function testTransferFrom(
-        address to,
-        uint256 approval,
-        uint256 amount
-    ) public {
+    function testTransferFrom(address to, uint256 approval, uint256 amount) public {
         amount = bound(amount, 0, approval);
 
         address from = address(0xABCD);
@@ -369,12 +358,7 @@ contract Erc20Test is Test {
         }
     }
 
-    function testPermit(
-        uint248 privKey,
-        address to,
-        uint256 amount,
-        uint256 deadline
-    ) public {
+    function testPermit(uint248 privKey, address to, uint256 amount, uint256 deadline) public {
         uint256 privateKey = privKey;
         if (deadline < block.timestamp) deadline = block.timestamp;
         if (privateKey == 0) privateKey = 1;
@@ -398,33 +382,21 @@ contract Erc20Test is Test {
         assertEq(token.nonces(owner), 1);
     }
 
-    function testFailBurnInsufficientBalance(
-        address to,
-        uint256 mintAmount,
-        uint256 burnAmount
-    ) public {
+    function testFailBurnInsufficientBalance(address to, uint256 mintAmount, uint256 burnAmount) public {
         burnAmount = bound(burnAmount, mintAmount + 1, type(uint256).max);
 
         token.mint(to, mintAmount);
         token.burn(to, burnAmount);
     }
 
-    function testFailTransferInsufficientBalance(
-        address to,
-        uint256 mintAmount,
-        uint256 sendAmount
-    ) public {
+    function testFailTransferInsufficientBalance(address to, uint256 mintAmount, uint256 sendAmount) public {
         sendAmount = bound(sendAmount, mintAmount + 1, type(uint256).max);
 
         token.mint(address(this), mintAmount);
         token.transfer(to, sendAmount);
     }
 
-    function testFailTransferFromInsufficientAllowance(
-        address to,
-        uint256 approval,
-        uint256 amount
-    ) public {
+    function testFailTransferFromInsufficientAllowance(address to, uint256 approval, uint256 amount) public {
         amount = bound(amount, approval + 1, type(uint256).max);
 
         address from = address(0xABCD);
@@ -437,11 +409,7 @@ contract Erc20Test is Test {
         token.transferFrom(from, to, amount);
     }
 
-    function testFailTransferFromInsufficientBalance(
-        address to,
-        uint256 mintAmount,
-        uint256 sendAmount
-    ) public {
+    function testFailTransferFromInsufficientBalance(address to, uint256 mintAmount, uint256 sendAmount) public {
         sendAmount = bound(sendAmount, mintAmount + 1, type(uint256).max);
 
         address from = address(0xABCD);
@@ -454,13 +422,9 @@ contract Erc20Test is Test {
         token.transferFrom(from, to, sendAmount);
     }
 
-    function testFailPermitBadNonce(
-        uint256 privateKey,
-        address to,
-        uint256 amount,
-        uint256 deadline,
-        uint256 nonce
-    ) public {
+    function testFailPermitBadNonce(uint256 privateKey, address to, uint256 amount, uint256 deadline, uint256 nonce)
+        public
+    {
         if (deadline < block.timestamp) deadline = block.timestamp;
         if (privateKey == 0) privateKey = 1;
         if (nonce == 0) nonce = 1;
@@ -481,12 +445,7 @@ contract Erc20Test is Test {
         token.permit(owner, to, amount, deadline, v, r, s);
     }
 
-    function testFailPermitBadDeadline(
-        uint256 privateKey,
-        address to,
-        uint256 amount,
-        uint256 deadline
-    ) public {
+    function testFailPermitBadDeadline(uint256 privateKey, address to, uint256 amount, uint256 deadline) public {
         if (deadline < block.timestamp) deadline = block.timestamp;
         if (privateKey == 0) privateKey = 1;
 
@@ -506,12 +465,7 @@ contract Erc20Test is Test {
         token.permit(owner, to, amount, deadline + 1, v, r, s);
     }
 
-    function testFailPermitPastDeadline(
-        uint256 privateKey,
-        address to,
-        uint256 amount,
-        uint256 deadline
-    ) public {
+    function testFailPermitPastDeadline(uint256 privateKey, address to, uint256 amount, uint256 deadline) public {
         deadline = bound(deadline, 0, block.timestamp - 1);
         if (privateKey == 0) privateKey = 1;
 
@@ -531,12 +485,7 @@ contract Erc20Test is Test {
         token.permit(owner, to, amount, deadline, v, r, s);
     }
 
-    function testFailPermitReplay(
-        uint256 privateKey,
-        address to,
-        uint256 amount,
-        uint256 deadline
-    ) public {
+    function testFailPermitReplay(uint256 privateKey, address to, uint256 amount, uint256 deadline) public {
         if (deadline < block.timestamp) deadline = block.timestamp;
         if (privateKey == 0) privateKey = 1;
 
