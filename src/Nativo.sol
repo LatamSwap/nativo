@@ -77,9 +77,14 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     function withdrawTo(address to, uint256 amount) external {
-        if (to == address(0)) revert AddressZero();
         // _burn(msg.sender, amount);
         assembly {
+            // if (to == address(0)) revert AddressZero();
+            if iszero(to) {
+                mstore(0x00, 0x750b219c) // 0x9fabe1c1 = AddressZero()
+                revert(0x1c, 0x04)
+            }
+            // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
             let _balance := sload(caller())
             if lt(_balance, amount) {
                 mstore(0x00, 0xf4d678b8) // 0xf4d678b8 = InsufficientBalance()
@@ -98,8 +103,13 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     function withdrawFrom(address from, address to, uint256 amount) external {
-        if (to == address(0)) revert AddressZero();
-
+        assembly {
+            // if (to == address(0)) revert AddressZero();
+            if iszero(to) {
+                mstore(0x00, 0x750b219c) // 0x9fabe1c1 = AddressZero()
+                revert(0x1c, 0x04)
+            }
+        }
         uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
 
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
