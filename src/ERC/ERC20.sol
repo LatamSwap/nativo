@@ -49,7 +49,7 @@ abstract contract ERC20 {
 
     // Balances of users will be stored onfrom 0x000000000000
 
-    mapping(address => mapping(address => uint256)) public allowance;
+    mapping(address user => mapping(address spender => uint256 amount)) public allowance;
 
     /*//////////////////////////////////////////////////////////////
                             EIP-2612 STORAGE
@@ -59,7 +59,7 @@ abstract contract ERC20 {
 
     bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;
 
-    mapping(address => uint256) public nonces;
+    mapping(address user => uint256 nonce) public nonces;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -237,10 +237,10 @@ abstract contract ERC20 {
         emit Approval(owner, spender, amount);
     }
 
-    function _spendAllowance(address from, address to, uint256 amount) internal {
-        uint256 allowed = allowance[from][to]; // Saves gas for limited approvals.
+    function _spendAllowance(address owner, address spender, uint256 amount) internal {
+        uint256 allowed = allowance[owner][spender]; // Saves gas for limited approvals.
 
-        if (allowed != type(uint256).max) allowance[from][to] = allowed - amount;
+        if (allowed != type(uint256).max) allowance[owner][spender] = allowed - amount;
     }
 
     function _transfer(address from, address to, uint256 amount) internal {

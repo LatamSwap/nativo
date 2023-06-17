@@ -13,7 +13,12 @@ contract Mock is ERC20("Mock", "MOCK") {
         _mint(to, amount);
     }
 
-    function burn(address from, uint256 amount) public {
+    function burn(uint256 amount) public {
+        _burn(msg.sender, amount);
+    }
+
+    function burnFrom(address from, uint256 amount) public {
+        _spendAllowance(from, msg.sender, amount);
         _burn(from, amount);
     }
 
@@ -42,7 +47,7 @@ contract Erc20Test is Test {
 
         vm.expectEmit(true, true, true, true);
         emit Transfer(address(this), address(0), toBurn);
-        token.burn(address(this), toBurn);
+        token.burn(toBurn);
         assertEq(token.balanceOf(address(this)), toMint - toBurn);
     }
 
@@ -79,5 +84,25 @@ contract Erc20Test is Test {
         token.tr(to, amount);
         if (to != address(this)) assertEq(token.balanceOf(address(this)), 0);
         assertEq(token.balanceOf(to), amount);
+    }
+
+    function testBurnFrom() external {
+        address eoa = makeAddr("EOA");
+
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(address(0), eoa, 100);
+        token.mint(eoa, 100);
+
+        vm.expectEmit(true, true, true, true);
+        emit Approval(eoa, address(this), 50);
+        vm.prank(eoa);
+        token.approve(address(this), 50);
+
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(eoa, address(0), 20);
+        token.burnFrom(eoa, 20);
+        assertEq(token.balanceOf(eoa), 80);
+        assertEq(token.allowance(eoa, address(this)), 30);
+    
     }
 }
