@@ -14,13 +14,42 @@ contract NativoTest is Test {
         vm.warp(1);
 
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Natice crytpo", "Wany");
+        nativo = new Nativo("Wrapped Native crypto", "wANY");
     }
 
     function testMetadata() public {
-        assertEq(nativo.name(), "Wrapped Natice crytpo", "Wrong name");
-        assertEq(nativo.symbol(), "Wany", "Wrong symbol");
+        assertEq(nativo.name(), "Wrapped Native crypto", "Wrong name");
+        assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
+        assertEq(nativo.totalSupply(), 0, "Wrong total supply");
+    }
+
+    function testCantWithdraw() external {
+        bool success;
+        (success,) = address(nativo).call{value: 1 ether}("!implemented");
+        assertFalse(success, "Should have reverted");
+
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have succeeded");
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have succeeded");
+
+        assertEq(address(nativo).balance, 1 ether);
+        assertEq(nativo.totalSupply(), 1 ether);
+        assertEq(nativo.balanceOf(address(this)), 1 ether);
+
+        // contract cant receive ether, doesnt have a fallback function
+        vm.expectRevert();
+        nativo.withdraw(0.5 ether);
+
+        // contract cant receive ether, doesnt have a fallback function
+        vm.expectRevert();
+        nativo.withdrawTo(address(this), 0.5 ether);
+
+        nativo.withdrawTo(address(0xc0ffe), 0.5 ether);
+
+        vm.expectRevert();
+        nativo.withdrawTo(address(0xc0ffe), 1.5 ether);
     }
 
     function testDepositTo(address from, address to, uint256 amount) public {
@@ -28,13 +57,8 @@ contract NativoTest is Test {
         vm.deal(from, amount);
         vm.prank(from);
 
-        if (to == address(0)) {
-            vm.expectRevert();
-            nativo.depositTo{value: amount}(to);
-        } else {
-            nativo.depositTo{value: amount}(to);
-            assertEq(nativo.balanceOf(to), amount);
-        }
+        nativo.depositTo{value: amount}(to);
+        assertEq(nativo.balanceOf(to), amount);
     }
 
     function testDepositAndWithdraw(uint256 amount, uint256 remove, uint256 remove2, address removeTo) public {
@@ -114,30 +138,30 @@ contract NativoTest is Test {
         vm.stopPrank();
     }
 
-    function testWithdrawFrom() public {
+    function testwithdrawFromTo() public {
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(0), 1);
+        nativo.withdrawFromTo(EOA, address(0), 1);
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(nativo), 1);
+        nativo.withdrawFromTo(EOA, address(nativo), 1);
 
         // nothing to burn
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, EOA, 1);
+        nativo.withdrawFromTo(EOA, EOA, 1);
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         nativo.deposit{value: 10}();
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         nativo.depositTo{value: 1}(EOA);
         vm.prank(EOA);
         nativo.approve(EOA, 1);
 
         vm.prank(EOA);
-        nativo.withdrawFrom(EOA, EOA, 1);
+        nativo.withdrawFromTo(EOA, EOA, 1);
         assertEq(EOA.balance, 1);
 
         nativo.transfer(EOA, 2);
@@ -146,15 +170,15 @@ contract NativoTest is Test {
 
         vm.prank(EOA);
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         vm.prank(EOA);
         nativo.approve(address(this), 1);
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, bob, 10);
+        nativo.withdrawFromTo(EOA, bob, 10);
 
-        nativo.withdrawFrom(EOA, bob, 1);
+        nativo.withdrawFromTo(EOA, bob, 1);
 
         assertEq(bob.balance, 1);
     }
