@@ -102,7 +102,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         emit Transfer(msg.sender, address(0), amount);
     }
 
-    function withdrawFrom(address from, address to, uint256 amount) external {
+    function withdrawFromTo(address from, address to, uint256 amount) external {
         assembly {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
@@ -110,8 +110,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                 revert(0x1c, 0x04)
             }
         }
-        uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
 
+        // @dev decrease allowance (if not have unlimited allowance)
+        uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
 
         assembly {

@@ -138,30 +138,30 @@ contract NativoTest is Test {
         vm.stopPrank();
     }
 
-    function testWithdrawFrom() public {
+    function testwithdrawFromTo() public {
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(0), 1);
+        nativo.withdrawFromTo(EOA, address(0), 1);
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(nativo), 1);
+        nativo.withdrawFromTo(EOA, address(nativo), 1);
 
         // nothing to burn
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, EOA, 1);
+        nativo.withdrawFromTo(EOA, EOA, 1);
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         nativo.deposit{value: 10}();
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         nativo.depositTo{value: 1}(EOA);
         vm.prank(EOA);
         nativo.approve(EOA, 1);
 
         vm.prank(EOA);
-        nativo.withdrawFrom(EOA, EOA, 1);
+        nativo.withdrawFromTo(EOA, EOA, 1);
         assertEq(EOA.balance, 1);
 
         nativo.transfer(EOA, 2);
@@ -170,15 +170,15 @@ contract NativoTest is Test {
 
         vm.prank(EOA);
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, address(this), 1);
+        nativo.withdrawFromTo(EOA, address(this), 1);
 
         vm.prank(EOA);
         nativo.approve(address(this), 1);
 
         vm.expectRevert();
-        nativo.withdrawFrom(EOA, bob, 10);
+        nativo.withdrawFromTo(EOA, bob, 10);
 
-        nativo.withdrawFrom(EOA, bob, 1);
+        nativo.withdrawFromTo(EOA, bob, 1);
 
         assertEq(bob.balance, 1);
     }
