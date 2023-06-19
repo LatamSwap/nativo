@@ -41,6 +41,6 @@ Gas Used: 2308294
 
 ## LA CHAIN
 
-✅ Hash: [`0x8c9df5a4c542a8ac8e4e1e4388ee11109fc7891729d13af0dcd14d2891baee8b`](https://testexplorer.lachain.network/tx/0x8c9df5a4c542a8ac8e4e1e4388ee11109fc7891729d13af0dcd14d2891baee8b)
+✅ Hash: [`0x8c9df5a4c542a8ac8e4e1e4388ee11109fc7891729d13af0dcd14d2891baee8b`](https://explorer.lachain.network/tx/0x8c9df5a4c542a8ac8e4e1e4388ee11109fc7891729d13af0dcd14d2891baee8b)
 
-Contract Address: 0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d
+Contract Address: [`0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d`](https://explorer.lachain.network/address/0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d)
