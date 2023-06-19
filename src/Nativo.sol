@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.20;
 
 import {ERC20} from "./ERC/ERC20.sol";
@@ -25,7 +25,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     // @dev this is the treasury address, where the fees will be sent
     // this address will be define later, for now we use a arbitrary address
-    address public constant treasury = 0x00000000fFFffDB6Fc1F34ac4aD25dd9eF7031eF;
+    address public constant treasury = 0x0000003FA6D1d52849db6E9EeC9d117FefA2e200;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
