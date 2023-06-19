@@ -10,6 +10,13 @@ solc = "0.8.20"
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
+## https://explorer.testnet.rsk.co/
+RSK_RPC_URL="https://public-node.testnet.rsk.co"
+
+## chain id 43113
+## https://testnet.snowtrace.io/
+FUJI_RPC_URL="https://endpoints.omniatech.io/v1/avax/fuji/public"
+
 [profile.optimizor]
 viaIR = true
 
