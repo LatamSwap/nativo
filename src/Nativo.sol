@@ -1,4 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1
+
+/// @title A title that should describe the contract/interface
+/// @author eugenioclrc & rotcivegaf
+/// @notice Nativo is an enhanced version of the WETH contract, which provides
+/// a way to wrap the native cryptocurrency of any supported EVM network into 
+/// an ERC20 token, thus enabling more sophisticated interaction with smart 
+/// contracts and DApps on various blockchains.
+
 pragma solidity 0.8.20;
 
 import {ERC20} from "./ERC/ERC20.sol";
