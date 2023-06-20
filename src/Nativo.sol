@@ -48,24 +48,35 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                NATIVO LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Deposit native currency to get Nativo tokens
+    /// @dev This function is payable and will mint Nativo tokens, using the `msg.sender`
+    ///      address as the slot position to store the balance.
     function deposit() external payable {
         // _mint(msg.sender, msg.value);
+        /// @solidity memory-safe-assembly
         assembly {
             sstore(caller(), add(sload(caller()), callvalue()))
         }
         emit Transfer(address(0), msg.sender, msg.value);
     }
 
+    /// @notice Deposit native currency to get Nativo tokens in `to` address
+    /// @dev This function is payable and will mint Nativo tokens, using the `to`
+    ///      address as the slot position to store the balance.
     function depositTo(address to) external payable {
         // _mint(to, msg.value);
+        /// @solidity memory-safe-assembly
         assembly {
             sstore(to, add(sload(to), callvalue()))
         }
         emit Transfer(address(0), to, msg.value);
     }
 
-    function withdraw(uint256 amount) external {
+    /// @notice Withdraw native currency burning `amount` of Nativo tokens
+    /// @param amount The amount of Nativo tokens to burn
+    function withdraw(uint256 amount) public {
         // _burn(msg.sender, amount);
+        /// @solidity memory-safe-assembly
         assembly {
             let _balance := sload(caller())
             if lt(_balance, amount) {
@@ -84,8 +95,17 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         emit Transfer(msg.sender, address(0), amount);
     }
 
-    function withdrawTo(address to, uint256 amount) external {
+    /// @notice Withdraw all native currency of `msg.sender`,  burning all Nativo tokens owned by `msg.sender`
+    function withdrawAll() external {
+        withdraw(balanceOf(msg.sender));
+    }
+
+    /// @notice Withdraw native currency burning `amount` of Nativo tokens and send it to `to` address
+    /// @param to The address to send the native currency
+    /// @param amount The amount of Nativo tokens to burn
+    function withdrawTo(address to, uint256 amount) public {
         // _burn(msg.sender, amount);
+        /// @solidity memory-safe-assembly
         assembly {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
@@ -107,10 +127,18 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                 revert(0x1c, 0x04)
             }
         }
+
         emit Transfer(msg.sender, address(0), amount);
     }
 
-    function withdrawFromTo(address from, address to, uint256 amount) external {
+    /// @notice Withdraw all native currency of `msg.sender`,  burning all Nativo tokens owned by `msg.sender` and send it to `to` address
+    /// @param to The address to send the native currency
+    function withdrawAllTo(address to) external {
+        withdrawTo(to, balanceOf(msg.sender));
+    }
+
+    function withdrawFromTo(address from, address to, uint256 amount) public {
+        /// @solidity memory-safe-assembly
         assembly {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
@@ -123,6 +151,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
 
+        /// @solidity memory-safe-assembly
         assembly {
             sstore(from, sub(sload(from), amount))
 
@@ -140,8 +169,13 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         emit Transfer(to, address(0), amount);
     }
 
+    function withdrawAllFromTo(address from, address to) external {
+        withdrawFromTo(from, to, balanceOf(from));
+    }
+
     receive() external payable {
         // _mint(msg.sender, msg.value);
+        /// @solidity memory-safe-assembly
         assembly {
             sstore(caller(), add(sload(caller()), callvalue()))
         }
@@ -157,6 +191,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function totalSupply() external view override returns (uint256 totalSupply_) {
+        /// @solidity memory-safe-assembly
         assembly {
             totalSupply_ := sub(add(selfbalance(), sload(_FLASH_MINTED_SLOT)), 0x01)
         }
