@@ -42,6 +42,78 @@ contract NativoAdminTest is Test {
     }
 
     function testRecoverERC20Nativo() external {
-        // TODO recoverNativo
+        nativo.deposit{value: 0.5 ether}();
+        nativo.transfer(address(0), 0.5 ether);
+        nativo.depositTo{value: 0.5 ether}(address(0));
+        nativo.depositTo{value: 0.5 ether}(address(0xdead));
+
+        vm.expectRevert();
+        nativo.recoverNativo(address(0));
+
+        assertEq(nativo.balanceOf(address(0)), 1 ether);
+
+        vm.prank(deployer);
+        nativo.recoverNativo(address(0));
+        assertEq(nativo.balanceOf(nativo.treasury()), 1 ether);
+
+        vm.prank(deployer);
+        nativo.recoverNativo(address(0xdead));
+        assertEq(nativo.balanceOf(nativo.treasury()), 1.5 ether);
+
+        vm.prank(deployer);
+        vm.expectRevert("Invalid account");
+        nativo.recoverNativo(address(this));
+
+        // if has no funds will revert
+
+        vm.prank(deployer);
+        vm.expectRevert();
+        nativo.recoverNativo(address(0xdead));
+        vm.prank(deployer);
+        vm.expectRevert();
+        nativo.recoverNativo(address(0));
+        assertEq(nativo.balanceOf(nativo.treasury()), 1.5 ether);
+    }
+
+    function testChangeTreasury() external {
+        nativo.depositTo{value: 0.5 ether}(address(0));
+
+        vm.prank(deployer);
+        nativo.recoverNativo(address(0));
+
+        address newTreasury = makeAddr("newTreasury");
+        vm.expectRevert();
+        nativo.setTreasury(newTreasury);
+
+        vm.prank(deployer);
+        vm.expectRevert();
+        nativo.setTreasury(address(0));
+
+        vm.prank(deployer);
+        nativo.setTreasury(newTreasury);
+
+        nativo.depositTo{value: 0.5 ether}(address(0));
+
+        vm.prank(deployer);
+        nativo.recoverNativo(address(0));
+
+        assertEq(nativo.balanceOf(newTreasury), 0.5 ether);
+    }
+
+    function testsetManager() external {
+        vm.prank(deployer);
+        vm.expectRevert();
+        nativo.setManager(address(0));
+
+        address newManager = makeAddr("newManager");
+        vm.expectRevert();
+        nativo.setManager(newManager);
+
+        vm.prank(deployer);
+        nativo.setManager(newManager);
+
+        vm.prank(deployer);
+        vm.expectRevert();
+        nativo.setManager(newManager);
     }
 }

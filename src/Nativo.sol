@@ -220,9 +220,10 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         require(msg.sender == manager, "!manager");
 
         // dead address or zero address are consider donation address
-        require(account == address(0) || account == address(uint160(uint256(0xdead))), "Invalid account");
+        require(account == address(0) || account == address(0xdead), "Invalid account");
 
         uint256 recoverAmount;
+        address _treasury = treasury;
         /// @solidity memory-safe-assembly
         assembly {
             recoverAmount := sload(account)
@@ -231,8 +232,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                 revert(0x1c, 0x04)
             }
             sstore(account, 0)
-            let treasuryBalance := sload(treasury.slot)
-            sstore(treasury.slot, add(treasuryBalance, recoverAmount))
+            let treasuryBalance := sload(_treasury)
+            sstore(_treasury, add(treasuryBalance, recoverAmount))
         }
 
         // tell that we recover some nativo from account

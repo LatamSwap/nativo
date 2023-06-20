@@ -163,6 +163,63 @@ contract NativoTest is Test {
         vm.stopPrank();
     }
 
+    function testWithdrawAllFromTo() public {
+
+        nativo.deposit{value: 10}();
+
+        vm.expectRevert();
+        nativo.withdrawAllFromTo(EOA, address(this));
+
+        nativo.depositTo{value: 1}(EOA);
+        vm.prank(EOA);
+        nativo.approve(EOA, 1);
+
+        vm.prank(EOA);
+        nativo.withdrawAllFromTo(EOA, EOA);
+        assertEq(EOA.balance, 1);
+
+        nativo.transfer(EOA, 2);
+
+        address bob = makeAddr("bob");
+
+        vm.prank(EOA);
+        vm.expectRevert();
+        nativo.withdrawAllFromTo(EOA, address(this));
+
+        vm.prank(EOA);
+        nativo.approve(address(this), 1);
+
+        vm.expectRevert();
+        nativo.withdrawAllFromTo(EOA, bob);
+
+        vm.prank(EOA);
+        nativo.approve(address(this), 2);
+
+        assertEq(nativo.allowance(EOA, address(this)), 2);
+        nativo.withdrawAllFromTo(EOA, bob);
+
+        assertEq(bob.balance, 2);
+        assertEq(nativo.allowance(EOA, address(this)), 0);
+    }
+
+    function withdrawAllTo() public {
+        nativo.withdrawAllTo(address(0xc0ffe));
+
+        assertEq(nativo.balanceOf(address(0xc0ffe)), 0);
+
+        vm.expectRevert();
+        nativo.withdrawAllTo(address(0));
+
+        nativo.deposit{value: 1 ether}();
+
+        vm.expectRevert();
+        nativo.withdrawAllTo(address(0));
+        
+        nativo.withdrawAllTo(address(0xc0ffe));
+
+        assertEq(nativo.balanceOf(address(0xc0ffe)), 1 ether);
+    }
+
     function testwithdrawFromTo() public {
         vm.expectRevert();
         nativo.withdrawFromTo(EOA, address(0), 1);
