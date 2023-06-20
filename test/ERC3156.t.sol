@@ -77,4 +77,15 @@ contract ERC3156Test is Test {
         assertEq(nativo.balanceOf(address(receiver)), 0);
         assertEq(nativo.allowance(address(receiver), address(nativo)), 0);
     }
+
+    function testCantReenter() public {
+        ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
+        nativo.deposit{value: 10_000}();
+
+        vm.expectRevert("ERC3156: reentrancy not allowed");
+        nativo.flashLoan(receiver, address(nativo), 1000, 
+            abi.encodeWithSelector(nativo.flashLoan.selector, receiver, nativo, 1000, "")
+        );
+
+    }
 }
