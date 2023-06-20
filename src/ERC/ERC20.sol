@@ -89,7 +89,8 @@ abstract contract ERC20 {
 
     function totalSupply() external view virtual returns (uint256);
 
-    function balanceOf(address account) external view returns (uint256 _balance) {
+    function balanceOf(address account) public view returns (uint256 _balance) {
+        /// @solidity memory-safe-assembly
         assembly {
             _balance := sload(account)
         }
@@ -104,6 +105,7 @@ abstract contract ERC20 {
     }
 
     function transfer(address to, uint256 amount) external returns (bool) {
+        /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[msg.sender] -= amount;
             let _balance := sload(caller())
@@ -201,6 +203,7 @@ abstract contract ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     function _mint(address to, uint256 amount) internal virtual {
+        /// @solidity memory-safe-assembly
         assembly {
             // Cannot overflow because the sum of all user
             // balances can't exceed the max uint256 value.
@@ -214,6 +217,7 @@ abstract contract ERC20 {
     }
 
     function _burn(address from, uint256 amount) internal virtual {
+        /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[from] -= amount;
             let _balance := sload(from)
@@ -244,6 +248,7 @@ abstract contract ERC20 {
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
+        /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[from] -= amount;
             let _balance := sload(from)
