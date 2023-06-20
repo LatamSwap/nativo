@@ -164,7 +164,6 @@ contract NativoTest is Test {
     }
 
     function testWithdrawAllFromTo() public {
-
         nativo.deposit{value: 10}();
 
         vm.expectRevert();
@@ -214,7 +213,7 @@ contract NativoTest is Test {
 
         vm.expectRevert();
         nativo.withdrawAllTo(address(0));
-        
+
         nativo.withdrawAllTo(address(0xc0ffe));
 
         assertEq(nativo.balanceOf(address(0xc0ffe)), 1 ether);
