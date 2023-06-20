@@ -17,7 +17,7 @@ contract NativoInvariants is Test {
         nativo = new Nativo("Wrapped Native crypto", "Wany");
         handler = new Handler(nativo);
 
-        bytes4[] memory selectors = new bytes4[](8);
+        bytes4[] memory selectors = new bytes4[](10);
         selectors[0] = Handler.deposit.selector;
         selectors[1] = Handler.withdraw.selector;
         selectors[2] = Handler.sendFallback.selector;
@@ -26,6 +26,8 @@ contract NativoInvariants is Test {
         selectors[5] = Handler.transferFrom.selector;
         selectors[6] = Handler.depositTo.selector;
         selectors[7] = Handler.withdrawTo.selector;
+        selectors[8] = Handler.withdrawAll.selector;
+        selectors[9] = Handler.withdrawAllTo.selector;
 
         //selectors[6] = Handler.forcePush.selector;
 
@@ -39,6 +41,13 @@ contract NativoInvariants is Test {
     // ETH balance plus the Nativo totalSupply() should always
     // equal the total ETH_SUPPLY.
     function invariant_conservationOfETH() public {
+        /*
+        if(ETH_SUPPLY != address(handler).balance + nativo.totalSupply()) {
+            console.log("ETH_SUPPLY", ETH_SUPPLY);
+            console.log("address(handler).balance", address(handler).balance);
+            console.log("nativo.totalSupply()", nativo.totalSupply());
+        }
+        */
         assertEq(ETH_SUPPLY, address(handler).balance + nativo.totalSupply());
     }
 

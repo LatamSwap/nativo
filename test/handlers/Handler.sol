@@ -79,6 +79,35 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         ghost_withdrawSum += amount;
     }
 
+    function withdrawAll(uint256 actorSeed) public useActor(actorSeed) countCall("withdrawAll") {
+        uint256 amount = nativo.balanceOf(currentActor);
+        if (amount == 0) ghost_zeroWithdrawals++;
+
+        vm.startPrank(currentActor);
+        nativo.withdrawAll();
+        _pay(address(this), amount);
+        vm.stopPrank();
+
+        ghost_withdrawSum += amount;
+    }
+
+    function withdrawAllTo(uint256 actorSeed, uint256 actorTo) public useActor(actorSeed) countCall("withdrawAllTo") {
+        if (_actors.rand(actorTo) == address(0)) {
+            return;
+        }
+
+        uint256 amount = nativo.balanceOf(currentActor);
+        if (amount == 0) ghost_zeroWithdrawals++;
+
+        vm.prank(currentActor);
+        nativo.withdrawAllTo(_actors.rand(actorTo));
+
+        vm.prank(_actors.rand(actorTo));
+        _pay(address(this), amount);
+
+        ghost_withdrawSum += amount;
+    }
+
     function approve(uint256 actorSeed, uint256 spenderSeed, uint256 amount)
         public
         useActor(actorSeed)

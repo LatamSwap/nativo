@@ -8,7 +8,7 @@ import {Nativo} from "src/Nativo.sol";
 // FLASHLOAN tests
 contract ERC3156Test is Test {
     Nativo public nativo;
-    address immutable public EOA = makeAddr("EOA");
+    address public immutable EOA = makeAddr("EOA");
 
     function setUp() public {
         // name and symbol depend on the blockchain we are deploying

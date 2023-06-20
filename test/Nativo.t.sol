@@ -102,6 +102,31 @@ contract NativoTest is Test {
         vm.stopPrank();
     }
 
+    function testDepositAndWithdrawAll(uint256 amount, address removeTo) public {
+        amount = bound(amount, 1, type(uint128).max);
+
+        // console contract = 0x000000000000000000636F6e736F6c652e6c6f67
+        vm.assume(removeTo != 0x000000000000000000636F6e736F6c652e6c6f67);
+        // avoid precompiled contracts
+        vm.assume(removeTo > address(0x100));
+        // if removeTo is a contract and doesnt have a receive function, this will fail, to we skip this for now
+        vm.assume(removeTo.code.length == 0x00);
+
+        vm.deal(EOA, amount);
+
+        vm.startPrank(EOA);
+        assertEq(EOA.balance, amount);
+        nativo.deposit{value: amount}();
+        assertEq(nativo.totalSupply(), amount);
+
+        nativo.withdrawAll();
+
+        assertEq(nativo.totalSupply(), 0);
+        assertEq(EOA.balance, amount);
+
+        vm.stopPrank();
+    }
+
     function testWithdrawTo() public {
         vm.expectRevert();
         nativo.withdrawTo(address(0), 1);
