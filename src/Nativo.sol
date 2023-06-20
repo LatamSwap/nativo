@@ -3,8 +3,8 @@
 /// @title A title that should describe the contract/interface
 /// @author eugenioclrc & rotcivegaf
 /// @notice Nativo is an enhanced version of the WETH contract, which provides
-/// a way to wrap the native cryptocurrency of any supported EVM network into 
-/// an ERC20 token, thus enabling more sophisticated interaction with smart 
+/// a way to wrap the native cryptocurrency of any supported EVM network into
+/// an ERC20 token, thus enabling more sophisticated interaction with smart
 /// contracts and DApps on various blockchains.
 
 pragma solidity 0.8.20;
@@ -33,7 +33,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     // @dev this is the treasury address, where the fees will be sent
     // this address will be define later, for now we use a arbitrary address
-    address public constant treasury = 0x0000003FA6D1d52849db6E9EeC9d117FefA2e200;
+    address public treasury = 0x0000003FA6D1d52849db6E9EeC9d117FefA2e200;
+    address public manager;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -210,14 +211,15 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function recoverERC20(address token, uint256 amount) public {
-        require(msg.sender == treasury, "!treasury");
+        require(msg.sender == manager, "!manager");
         ERC20(token).transfer(treasury, amount);
     }
 
     function recoverNativo(address account) external {
-        require(msg.sender == treasury, "!treasury");
+        require(msg.sender == manager, "!manager");
 
-        require(account <= address(uint160(uint256(0xdead))), "Invalid account");
+        // dead address or zero address are consider donation address
+        require(account == address(0) || account == address(uint160(uint256(0xdead))), "Invalid account");
 
         uint256 recoverAmount;
         /// @solidity memory-safe-assembly
@@ -228,11 +230,27 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                 revert(0x1c, 0x04)
             }
             sstore(account, 0)
-            let treasuryBalance := sload(treasury)
-            sstore(treasury, add(treasuryBalance, recoverAmount))
+            let treasuryBalance := sload(treasury.slot)
+            sstore(treasury.slot, add(treasuryBalance, recoverAmount))
         }
 
         // tell that we recover some nativo from account
         emit RecoverNativo(account, recoverAmount);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                       PROTOCOL ADDRESS MANAGMENT
+    //////////////////////////////////////////////////////////////*/
+
+    function setManager(address account) external {
+        require(msg.sender == manager, "!manager");
+        require(account != address(0), "Invalid account");
+        manager = account;
+    }
+
+    function setTreasury(address newTreasury) external {
+        require(msg.sender == manager, "!manager");
+        require(newTreasury != address(0), "Invalid newTreasury");
+        treasury = newTreasury;
     }
 }
