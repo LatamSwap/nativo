@@ -43,6 +43,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     constructor(bytes32 name_, bytes32 symbol_) ERC20(name_, symbol_) {
         // extras?
         init_ERC3156();
+        manager = msg.sender;
     }
 
     /*//////////////////////////////////////////////////////////////
