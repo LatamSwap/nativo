@@ -83,9 +83,41 @@ contract ERC3156Test is Test {
         nativo.deposit{value: 10_000}();
 
         vm.expectRevert("ERC3156: reentrancy not allowed");
-        nativo.flashLoan(receiver, address(nativo), 1000, 
+        nativo.flashLoan(
+            receiver,
+            address(nativo),
+            1000,
             abi.encodeWithSelector(nativo.flashLoan.selector, receiver, nativo, 1000, "")
         );
+    }
 
+    function testInvalidReturn() public {
+        ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(false, true);
+        nativo.deposit{value: 10_000}();
+
+        vm.expectRevert(abi.encodeWithSignature("ERC3156InvalidReceiver(address)", address(receiver)));
+        nativo.flashLoan(receiver, address(nativo), 1000, "");
+    }
+
+    function testMissingApprove() public {
+        ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, false);
+        nativo.deposit{value: 10_000}();
+
+        vm.expectRevert();
+        nativo.flashLoan(receiver, address(nativo), 1000, "");
+    }
+
+    function testInsufficientFunds() public {
+        ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
+        nativo.deposit{value: 10_000}();
+
+        bytes memory transferOneNative = abi.encodeWithSignature("transfer(address,uint256)", address(this), 1);
+
+        nativo.transfer(address(receiver), 1);
+        vm.expectRevert();
+        nativo.flashLoan(receiver, address(nativo), 1000, transferOneNative);
+
+        nativo.transfer(address(receiver), 2);
+        nativo.flashLoan(receiver, address(nativo), 1000, transferOneNative);
     }
 }

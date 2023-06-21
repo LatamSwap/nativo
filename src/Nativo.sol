@@ -130,7 +130,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
             }
         }
 
-        emit Transfer(msg.sender, address(0), amount);
+        emit Transfer(msg.sender, to, amount);
+        emit Transfer(to, address(0), amount);
     }
 
     /// @notice Withdraw all native currency of `msg.sender`,  burning all Nativo tokens owned by `msg.sender` and send it to `to` address
