@@ -67,6 +67,11 @@ contract NativoInvariants is Test {
         assertEq(address(nativo).balance - handler.ghost_forcePushSum(), sumOfBalances);
     }
 
+    function invariant_internalData() public {
+        assertEq(nativo.treasury(), address(this));
+        assertEq(nativo.manager(), address(this));
+    }
+
     function accumulateBalance(uint256 balance, address caller) external view returns (uint256) {
         return balance + nativo.balanceOf(caller);
     }

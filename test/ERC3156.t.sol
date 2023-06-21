@@ -52,6 +52,9 @@ contract ERC3156Test is Test {
     }
 
     function testFlashLoanSuccess() public {
+        address treasury = makeAddr("treasury");
+        nativo.setTreasury(treasury);
+
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 0));
         nativo.flashLoan(receiver, address(nativo), 1000, "");
