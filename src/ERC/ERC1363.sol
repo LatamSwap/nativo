@@ -24,7 +24,7 @@ abstract contract ERC1363 is ERC20 {
         return true;
     }
 
-    function transferAndCall(address to, uint256 amount) external returns (bool) {
+    function transferAndCall(address to, uint256 amount) public returns (bool) {
         return transferAndCall(to, amount, "");
     }
 

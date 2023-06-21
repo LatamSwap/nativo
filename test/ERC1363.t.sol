@@ -84,4 +84,15 @@ contract ERC1363Test is Test {
 
         assertEq(nft.balanceOf(EOA), 1);
     }
+
+    function testSupportsInterface() public {
+        assertEq(nativo.supportsInterface(0xb0202a11), true);
+        assertEq(nativo.supportsInterface(0xdeadbeef), false);
+    }
+
+    function testDepositTransferAndCall() public {
+        nativo.depositTransferAndCall{value: 1 ether}(address(nft), 0.5 ether);
+        assertEq(nft.balanceOf(address(this)), 1);
+        assertEq(nativo.balanceOf(address(this)), 0.5 ether);
+    }
 }

@@ -201,6 +201,33 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     /*//////////////////////////////////////////////////////////////
+                            EXTRA ERC1363 LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function depositTransferAndCall(address to, uint256 amount) external payable returns (bool) {
+        // _mint(msg.sender, msg.value);
+        /// @solidity memory-safe-assembly
+        assembly {
+            sstore(caller(), add(sload(caller()), callvalue()))
+        }
+        emit Transfer(address(0), msg.sender, msg.value);
+
+        return transferAndCall(to, amount, "");
+    }
+
+    function depositTransferAndCall(address to, uint256 amount, bytes memory data) external payable returns (bool) {
+        // _mint(msg.sender, msg.value);
+
+        /// @solidity memory-safe-assembly
+        assembly {
+            sstore(caller(), add(sload(caller()), callvalue()))
+        }
+        emit Transfer(address(0), msg.sender, msg.value);
+
+        return transferAndCall(to, amount, data);
+    }
+
+    /*//////////////////////////////////////////////////////////////
                                ERC3156 LOGIC
     //////////////////////////////////////////////////////////////*/
 
