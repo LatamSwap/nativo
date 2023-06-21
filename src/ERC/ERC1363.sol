@@ -30,7 +30,7 @@ abstract contract ERC1363 is ERC20 {
 
     function transferAndCall(address to, uint256 amount, bytes memory data) public returns (bool) {
         _transfer(msg.sender, to, amount);
-        bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, to, amount, data);
+        bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, msg.sender, amount, data);
         // 0x88a7ca5c == `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
         require(response == 0x88a7ca5c, "IERC1363Receiver: onApprovalReceived rejected");
         return true;
@@ -43,7 +43,7 @@ abstract contract ERC1363 is ERC20 {
     function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool) {
         _spendAllowance(from, msg.sender, amount);
         _transfer(from, to, amount);
-        bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, to, amount, data);
+        bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, from, amount, data);
         // 0x88a7ca5c == `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
         require(response == 0x88a7ca5c, "IERC1363Receiver: onApprovalReceived rejected");
         return true;
