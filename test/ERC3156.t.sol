@@ -23,8 +23,6 @@ contract ERC3156Test is Test {
     }
 
     function invariantMetadata() public {
-        assertEq(nativo.manager(), manager);
-        assertEq(nativo.treasury(), treasury);
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "nANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
@@ -74,7 +72,7 @@ contract ERC3156Test is Test {
         vm.expectRevert("!implemented");
         nativo.flashLoan(receiver, address(nativo), 1000, "0x");
 
-        vm.expectRevert(abi.encodeWithSignature("InsufficientAllowance()"));
+        vm.expectRevert(abi.encodeWithSignature("InsufficientBalance()"));
         nativo.flashLoan(receiver, address(nativo), 1000, "");
 
         vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 1001));

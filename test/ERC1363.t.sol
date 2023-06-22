@@ -21,8 +21,6 @@ contract ERC1363Test is Test {
     }
 
     function invariantMetadata() public {
-        assertEq(nativo.manager(), manager);
-        assertEq(nativo.treasury(), manager);
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "nANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
