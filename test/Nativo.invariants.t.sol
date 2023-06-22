@@ -41,13 +41,12 @@ contract NativoInvariants is Test {
     // ETH balance plus the Nativo totalSupply() should always
     // equal the total ETH_SUPPLY.
     function invariant_conservationOfETH() public {
-        
-        if(ETH_SUPPLY != address(handler).balance + nativo.totalSupply()) {
+        if (ETH_SUPPLY != address(handler).balance + nativo.totalSupply()) {
             console.log("ETH_SUPPLY", ETH_SUPPLY);
             console.log("address(handler).balance", address(handler).balance);
             console.log("nativo.totalSupply()", nativo.totalSupply());
         }
-        
+
         assertEq(ETH_SUPPLY, address(handler).balance + nativo.totalSupply());
     }
 

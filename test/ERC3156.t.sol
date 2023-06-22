@@ -12,7 +12,6 @@ contract ERC3156Test is Test {
     address public immutable EOA = makeAddr("EOA");
     address public immutable manager = makeAddr("manager");
     address treasury = makeAddr("treasury");
-        
 
     function setUp() public {
         vm.prank(manager);
@@ -21,7 +20,6 @@ contract ERC3156Test is Test {
 
         vm.prank(manager);
         nativo.setTreasury(treasury);
-
     }
 
     function invariantMetadata() public {
