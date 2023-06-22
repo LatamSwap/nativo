@@ -212,6 +212,11 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                ERC20 LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev totalSupply is the total amount of Native currency in contract (exampl ETH) plus
+     *     the amount of Nativo tokens minted in flash loans, minus one, because the
+     *     flash loan will always be (1+flashMinted), please review the ERC3156.sol
+     */
     function totalSupply() external view override returns (uint256 totalSupply_) {
         /// @solidity memory-safe-assembly
         assembly {
