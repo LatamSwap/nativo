@@ -26,6 +26,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     event RecoverNativo(address indexed account, uint256 amount);
+    event SetTreasury(address oldManager, address newManager);
+    event SetManager(address oldTreasury, address newTreasury);
 
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
@@ -303,13 +305,17 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         assembly {
             sstore(_MANAGER_SLOT, account)
         }
+        emit SetManager(msg.sender, account);
     }
 
     function setTreasury(address newTreasury) external {
         require(msg.sender == manager(), "!manager");
         require(newTreasury != address(0), "Invalid newTreasury");
+        address oldTreasury;
         assembly {
+            oldTreasury := sload(_TREASURY_SLOT)
             sstore(_TREASURY_SLOT, newTreasury)
         }
+        emit SetTreasury(oldTreasury, newTreasury);
     }
 }
