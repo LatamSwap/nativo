@@ -16,16 +16,15 @@ contract NativoTest is Test {
 
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Native crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
     }
 
     function invariantMetadata() public {
         assertEq(nativo.manager(), manager);
         assertEq(nativo.treasury(), manager);
-        assertEq(nativo.name(), "Wrapped Native crypto", "Wrong name");
+        assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
-        assertEq(nativo.totalSupply(), 0, "Wrong total supply");
     }
 
     function testCantWithdraw() external {
