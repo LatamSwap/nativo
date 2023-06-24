@@ -187,7 +187,15 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
         /// @solidity memory-safe-assembly
         assembly {
-            sstore(from, sub(sload(from), amount))
+            // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
+            let _balance := sload(from)
+            if lt(_balance, amount) {
+                // revert error, 0xf4d678b8 = InsufficientBalance()
+                mstore(0x00, 0xf4d678b8)
+                revert(0x1c, 0x04)
+            }
+
+            sstore(from, sub(_balance, amount))
 
             // Transfer the ETH and store if it succeeded or not.
             let success := call(gas(), to, amount, 0, 0, 0, 0)
