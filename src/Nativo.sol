@@ -247,8 +247,10 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         // _mint(msg.sender, msg.value);
         /// @solidity memory-safe-assembly
         assembly {
+            // add to msg.sender the amount of nativo to deposit
             sstore(caller(), add(sload(caller()), callvalue()))
         }
+        // now mint event
         emit Transfer(address(0), msg.sender, msg.value);
 
         return transferAndCall(to, amount, "");
@@ -283,6 +285,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         ERC20(token).transfer(treasury(), amount);
     }
 
+    /// @notice Recover nativo ERC20 token sent to dead address: address(0) or address(0xdead)
+    /// @dev Nativo ERC20 token sent to dead address are consider donations and shoul be claimable by the protocol
+    /// @param account The address to recover nativo ERC20 token, can only be address(0) or address(0xdead)
     function recoverNativo(address account) external {
         require(msg.sender == manager(), "!manager");
 
@@ -294,11 +299,16 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         /// @solidity memory-safe-assembly
         assembly {
             recoverAmount := sload(account)
-            if iszero(recoverAmount) {
-                mstore(0x00, 0x750b219c) // 0x750b219c = WithdrawFailed()
-                revert(0x1c, 0x04)
-            }
+        }
+
+        require(recoverAmount > 0, "No nativo to recover");
+
+        /// @solidity memory-safe-assembly
+        assembly {
+            // set to zero the balance of account
             sstore(account, 0)
+
+            // add to treasury the amount of nativo to recover
             let treasuryBalance := sload(_treasury)
             sstore(_treasury, add(treasuryBalance, recoverAmount))
         }
