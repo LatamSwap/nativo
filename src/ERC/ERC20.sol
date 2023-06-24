@@ -92,12 +92,16 @@ abstract contract ERC20 {
     function transfer(address to, uint256 amount) external returns (bool) {
         /// @solidity memory-safe-assembly
         assembly {
-            // balanceOf[msg.sender] -= amount;
+            // require(balanceOf(msg.sender) >= amount, custom error InsufficientBalance()))
             let _balance := sload(caller())
             if lt(_balance, amount) {
-                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
+                // `InsufficientBalance()`.
+                mstore(0x00, 0xf4d678b8)
                 revert(0x1c, 0x04)
             }
+
+            // cant underflow due previous check
+            // unchecked { balanceOf[msg.sender] -= amount; }
             sstore(caller(), sub(_balance, amount))
 
             // Cannot overflow because the sum of all user
@@ -116,6 +120,7 @@ abstract contract ERC20 {
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
         uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
 
+        // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
 
         _transfer(from, to, amount);
@@ -187,7 +192,7 @@ abstract contract ERC20 {
                         INTERNAL MINT/BURN LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function _mint(address to, uint256 amount) internal virtual {
+    function _mint(address to, uint256 amount) internal {
         /// @solidity memory-safe-assembly
         assembly {
             // Cannot overflow because the sum of all user
@@ -229,18 +234,21 @@ abstract contract ERC20 {
     function _spendAllowance(address owner, address spender, uint256 amount) internal {
         uint256 allowed = allowance[owner][spender]; // Saves gas for limited approvals.
 
+        // if spender try to spend more than allowed it will do an arythmetic underflow revert
         if (allowed != type(uint256).max) allowance[owner][spender] = allowed - amount;
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
         /// @solidity memory-safe-assembly
         assembly {
-            // balanceOf[from] -= amount;
+            // require(balanceOf(from) >= amount, custom error InsufficientBalance()))
             let _balance := sload(from)
             if lt(_balance, amount) {
-                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
+                // `InsufficientBalance()`.
+                mstore(0x00, 0xf4d678b8)
                 revert(0x1c, 0x04)
             }
+            // balanceOf[from] -= amount;
             sstore(from, sub(_balance, amount))
 
             // Cannot overflow because the sum of all user
