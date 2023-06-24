@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Based on https://github.com/horsefacts/weth-invariant-testing
-// @author horsefactspragma solidity ^0.8.13;
+// @author horsefacts
+pragma solidity ^0.8.13;
 
 struct AddressSet {
     address[] addrs;
