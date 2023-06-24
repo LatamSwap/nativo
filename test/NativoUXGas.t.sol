@@ -100,12 +100,11 @@ contract NativoUXGasTest is Test, Benchmark {
     }
 
     function testBenchmarkWithdrawFromTo() public {
-
         vm.startPrank(EOAweth);
         weth.deposit{value: 1 ether}();
         weth.approve(address(uxWithWETH), type(uint256).max);
         vm.stopPrank();
-        
+
         vm.startPrank(EOAnativo);
         nativo.deposit{value: 1 ether}();
         nativo.approve(address(uxWithNativo), type(uint256).max);
@@ -126,12 +125,11 @@ contract NativoUXGasTest is Test, Benchmark {
     }
 
     function testBenchmarkWithdrawAllFromTo() public {
-
         vm.startPrank(EOAweth);
         weth.deposit{value: 1 ether}();
         weth.approve(address(uxWithWETH), type(uint256).max);
         vm.stopPrank();
-        
+
         vm.startPrank(EOAnativo);
         nativo.deposit{value: 1 ether}();
         nativo.approve(address(uxWithNativo), type(uint256).max);
