@@ -58,36 +58,44 @@ contract ERC3156Test is Test {
         vm.expectRevert();
         nativo.flashFee(address(0xdead), 0);
 
-        // 0.1% fee
-        assertEq(nativo.flashFee(address(nativo), 1000), 1);
-        assertEq(nativo.flashFee(address(nativo), 10000), 10);
+        // 0.09% fee
+        assertEq(nativo.flashFee(address(nativo), 10000), 9);
+        assertEq(nativo.flashFee(address(nativo), 100000), 90);
     }
 
     function testFlashLoanSuccess() public {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 0));
-        nativo.flashLoan(receiver, address(nativo), 1000, "");
+        nativo.flashLoan(receiver, address(nativo), 10000, "");
 
-        nativo.deposit{value: 1001}();
+        nativo.deposit{value: 10009}();
         vm.expectRevert("!implemented");
-        nativo.flashLoan(receiver, address(nativo), 1000, "0x");
+        nativo.flashLoan(receiver, address(nativo), 10000, "0x");
 
         vm.expectRevert(abi.encodeWithSignature("InsufficientBalance()"));
-        nativo.flashLoan(receiver, address(nativo), 1000, "");
+        nativo.flashLoan(receiver, address(nativo), 10000, "");
 
-        vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 1001));
-        nativo.flashLoan(receiver, address(nativo), 1002, "");
+        vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 10009));
+        nativo.flashLoan(receiver, address(nativo), 10010, "");
 
         // 1 token to pay the fee
-        nativo.transfer(address(receiver), 1);
-        nativo.flashLoan(receiver, address(nativo), 1000, "");
+        nativo.transfer(address(receiver), 9);
+        nativo.flashLoan(receiver, address(nativo), 10000, "");
 
-        assertEq(nativo.balanceOf(nativo.treasury()), 1);
+        assertEq(nativo.balanceOf(nativo.treasury()), 9);
 
-        assertEq(nativo.totalSupply(), 1001);
+        assertEq(nativo.totalSupply(), 10009);
 
         assertEq(nativo.balanceOf(address(receiver)), 0);
         assertEq(nativo.allowance(address(receiver), address(nativo)), 0);
+    }
+
+    function testMinFee() public {
+         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
+        nativo.deposit{value: 10_000}();
+
+        vm.expectRevert();
+        nativo.flashLoan(receiver, address(nativo), 9999, "");
     }
 
     function testCantReenter() public {
@@ -98,8 +106,8 @@ contract ERC3156Test is Test {
         nativo.flashLoan(
             receiver,
             address(nativo),
-            1000,
-            abi.encodeWithSelector(nativo.flashLoan.selector, receiver, nativo, 1000, "")
+            10000,
+            abi.encodeWithSelector(nativo.flashLoan.selector, receiver, nativo, 10000, "")
         );
     }
 
@@ -108,7 +116,7 @@ contract ERC3156Test is Test {
         nativo.deposit{value: 10_000}();
 
         vm.expectRevert(abi.encodeWithSignature("ERC3156InvalidReceiver(address)", address(receiver)));
-        nativo.flashLoan(receiver, address(nativo), 1000, "");
+        nativo.flashLoan(receiver, address(nativo), 10000, "");
     }
 
     function testMissingApprove() public {
@@ -121,15 +129,16 @@ contract ERC3156Test is Test {
 
     function testInsufficientFunds() public {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
-        nativo.deposit{value: 10_000}();
+        nativo.deposit{value: 10_010}();
 
         bytes memory transferOneNative = abi.encodeWithSignature("transfer(address,uint256)", address(this), 1);
 
-        nativo.transfer(address(receiver), 1);
-        vm.expectRevert();
-        nativo.flashLoan(receiver, address(nativo), 1000, transferOneNative);
 
-        nativo.transfer(address(receiver), 2);
-        nativo.flashLoan(receiver, address(nativo), 1000, transferOneNative);
+        nativo.transfer(address(receiver), 9);
+        vm.expectRevert();
+        nativo.flashLoan(receiver, address(nativo), 10000, transferOneNative);
+
+        nativo.transfer(address(receiver), 1);
+        nativo.flashLoan(receiver, address(nativo), 10000, transferOneNative);
     }
 }

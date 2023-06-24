@@ -13,7 +13,8 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
     uint256 internal constant _FLASH_MINTED_SLOT = 0x3965801a1a161db0d5a8d326fe0135e2586f55ca7bc4e22ea49399d97c657530;
 
     bytes32 private constant _RETURN_VALUE = keccak256("ERC3156FlashBorrower.onFlashLoan");
-    uint256 private constant _FEE_DENOMINATOR = 1000;
+    uint256 private constant _FEE_BPS = 100_00; // 100%
+    uint256 private constant _FEE = 9; // 0.09%
 
     /**
      * @dev The loan token is not valid.
@@ -69,17 +70,19 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
 
     /**
      * @dev Returns the fee applied when doing flash loans. By default this
-     * is set to 0.1% (10 bips).
+     * is set to 0.09% (9 bips).
      * @param token The token to be flash loaned.
      * @param amount The amount of tokens to be loaned.
-     * @return The fees applied to the corresponding flash loan.
+     * @return fee The fees applied to the corresponding flash loan.
      */
-    function flashFee(address token, uint256 amount) external view returns (uint256) {
+    function flashFee(address token, uint256 amount) external view returns (uint256 fee) {
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);
         }
-        // @dev fixed fee of 0.1%
-        return amount / _FEE_DENOMINATOR;
+        // @dev fixed fee of 0.09%
+        assembly {
+            fee := div(mul(amount, _FEE), _FEE_BPS)
+        }   
     }
 
     /**
@@ -113,7 +116,7 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
     {
         uint256 flashMinted = _flashMinted();
         if (flashMinted > 1) revert("ERC3156: reentrancy not allowed");
-        if (amount < 1000) revert("ERC3156: minimum loan amount is 1000 wei");
+        if (amount < 10000) revert("ERC3156: minimum loan amount is 1000 wei");
 
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);
@@ -129,8 +132,11 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
             sstore(_FLASH_MINTED_SLOT, add(flashMinted, amount))
         }
 
-        // @dev fee is 0,1%
-        uint256 fee = amount / _FEE_DENOMINATOR;
+        // @dev fee is 0,09%
+        uint256 fee;
+        assembly {
+            fee := div(mul(amount, _FEE), _FEE_BPS)
+        }
 
         _mint(address(receiver), amount);
         if (receiver.onFlashLoan(msg.sender, token, amount, fee, data) != _RETURN_VALUE) {
