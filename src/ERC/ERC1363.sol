@@ -98,6 +98,21 @@ abstract contract ERC1363 is ERC20 {
         return true;
     }
 
+
+    /*//////////////////////////////////////////////////////////////
+                   EXTRA ERC1363 LOGIC FOR NATIVO
+    //////////////////////////////////////////////////////////////*/
+
+    function depositTransferAndCall(address to, uint256 amount) external payable returns (bool) {
+        _mint(msg.sender, msg.value);
+        return transferAndCall(to, amount, "");
+    }
+
+    function depositTransferAndCall(address to, uint256 amount, bytes memory data) external payable returns (bool) {
+        _mint(to, msg.value);
+        return transferAndCall(to, amount, data);
+    }
+
     /*//////////////////////////////////////////////////////////////
                      ERC165 INTERFACE SUPPORT
     //////////////////////////////////////////////////////////////*/
