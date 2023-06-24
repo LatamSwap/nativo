@@ -91,7 +91,7 @@ contract ERC3156Test is Test {
     }
 
     function testMinFee() public {
-         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
+        ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         nativo.deposit{value: 10_000}();
 
         vm.expectRevert();
@@ -132,7 +132,6 @@ contract ERC3156Test is Test {
         nativo.deposit{value: 10_010}();
 
         bytes memory transferOneNative = abi.encodeWithSignature("transfer(address,uint256)", address(this), 1);
-
 
         nativo.transfer(address(receiver), 9);
         vm.expectRevert();

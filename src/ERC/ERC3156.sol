@@ -82,7 +82,7 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
         // @dev fixed fee of 0.09%
         assembly {
             fee := div(mul(amount, _FEE), _FEE_BPS)
-        }   
+        }
     }
 
     /**

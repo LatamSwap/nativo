@@ -3,7 +3,7 @@ pragma solidity >=0.8.10;
 
 import "forge-std/Test.sol";
 
-import {Nativo} from "src/Nativo.sol";
+import {Nativo, ERC20} from "src/Nativo.sol";
 
 contract NativoTest is Test {
     Nativo public nativo;
@@ -25,31 +25,40 @@ contract NativoTest is Test {
         assertEq(nativo.decimals(), 18, "Wrong decimals");
     }
 
-    function testCantWithdraw() external {
+    function testPhantomFunction() public {
         bool success;
         (success,) = address(nativo).call{value: 1 ether}("!implemented");
         assertFalse(success, "Should have reverted");
 
-        (success,) = address(nativo).call{value: 0.5 ether}("");
-        assertTrue(success, "Should have succeeded");
-        (success,) = address(nativo).call{value: 0.5 ether}("");
-        assertTrue(success, "Should have succeeded");
+        (success,) = address(nativo).call("otherFunction");
+        assertFalse(success, "Should have reverted");
+    }
 
-        assertEq(address(nativo).balance, 1 ether);
-        assertEq(nativo.totalSupply(), 1 ether);
-        assertEq(nativo.balanceOf(address(this)), 1 ether);
+    function testCantWithdraw() external {
+        bool success;
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have success");
+        (success,) = address(nativo).call{value: 0.5 ether}("");
+        assertTrue(success, "Should have success");
+
+        assertEq(address(nativo).balance, 1 ether, "Wrong balance");
+        assertEq(nativo.totalSupply(), 1 ether, "Wrong total supply");
+        assertEq(nativo.balanceOf(address(this)), 1 ether, "Wrong balance of user");
 
         // contract cant receive ether, doesnt have a fallback function
-        vm.expectRevert();
+        vm.expectRevert(Nativo.WithdrawFailed.selector);
         nativo.withdraw(0.5 ether);
 
         // contract cant receive ether, doesnt have a fallback function
-        vm.expectRevert();
+        vm.expectRevert(Nativo.WithdrawFailed.selector);
         nativo.withdrawTo(address(this), 0.5 ether);
+
+        vm.expectRevert(Nativo.AddressZero.selector);
+        nativo.withdrawTo(address(0), 0.5 ether);
 
         nativo.withdrawTo(address(0xc0ffe), 0.5 ether);
 
-        vm.expectRevert();
+        vm.expectRevert(ERC20.InsufficientBalance.selector);
         nativo.withdrawTo(address(0xc0ffe), 1.5 ether);
     }
 

@@ -136,7 +136,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
                 // revert error, 0x9fabe1c1 = AddressZero()
-                mstore(0x00, 0x750b219c) // 0x9fabe1c1 = AddressZero()
+                mstore(0x00, 0x9fabe1c1)
                 revert(0x1c, 0x04)
             }
             // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
