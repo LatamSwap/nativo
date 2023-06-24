@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.4;
 
-interface Nativo {
+interface INativo {
     error AddressZero();
     error AllowanceOverflow();
     error AllowanceUnderflow();
