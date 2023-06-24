@@ -142,10 +142,9 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
             sstore(_FLASH_MINTED_SLOT, 0x01)
         }
 
-        address flashFeeReceiver = _flashFeeReceiver();
         _spendAllowance(address(receiver), address(this), amount + fee);
         _burn(address(receiver), amount);
-        _transfer(address(receiver), flashFeeReceiver, fee);
+        _transfer(address(receiver), _flashFeeReceiver(), fee);
         return true;
     }
 }
