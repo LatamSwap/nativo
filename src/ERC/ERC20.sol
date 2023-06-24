@@ -8,23 +8,8 @@ abstract contract ERC20 {
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    /// @dev The allowance has overflowed.
-    error AllowanceOverflow();
-
-    /// @dev The allowance has underflowed.
-    error AllowanceUnderflow();
-
     /// @dev Insufficient balance. 4bytes sig 0xf4d678b8
     error InsufficientBalance();
-
-    /// @dev Insufficient allowance.
-    error InsufficientAllowance();
-
-    /// @dev The permit is invalid.
-    error InvalidPermit();
-
-    /// @dev The permit has expired.
-    error PermitExpired();
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -110,7 +95,7 @@ abstract contract ERC20 {
             // balanceOf[msg.sender] -= amount;
             let _balance := sload(caller())
             if lt(_balance, amount) {
-                mstore(0x00, 0x13be252b) // TODO calcular keccak `InsufficientAllowance()`.
+                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             sstore(caller(), sub(_balance, amount))
@@ -222,7 +207,7 @@ abstract contract ERC20 {
             // balanceOf[from] -= amount;
             let _balance := sload(from)
             if lt(_balance, amount) {
-                mstore(0x00, 0x13be252b) // TODO calcular keccak `InsufficientAllowance()`.
+                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             sstore(from, sub(_balance, amount))
@@ -253,7 +238,7 @@ abstract contract ERC20 {
             // balanceOf[from] -= amount;
             let _balance := sload(from)
             if lt(_balance, amount) {
-                mstore(0x00, 0x13be252b) // TODO calcular keccak `InsufficientAllowance()`.
+                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
                 revert(0x1c, 0x04)
             }
             sstore(from, sub(_balance, amount))

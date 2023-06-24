@@ -10,12 +10,20 @@ import {NFTtoken} from "./mock/NftMock.sol";
 contract ERC1363Test is Test {
     Nativo public nativo;
     address public immutable EOA = makeAddr("EOA");
+    address public immutable manager = makeAddr("managerAndTreasury");
     NFTtoken public nft;
 
     function setUp() public {
+        vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
         nativo = new Nativo("Wrapped Nativo crypto", "nANY");
         nft = new NFTtoken(address(nativo));
+    }
+
+    function invariantMetadata() public {
+        assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
+        assertEq(nativo.symbol(), "nANY", "Wrong symbol");
+        assertEq(nativo.decimals(), 18, "Wrong decimals");
     }
 
     function testApproveAndCall() public {

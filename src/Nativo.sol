@@ -26,15 +26,33 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     event RecoverNativo(address indexed account, uint256 amount);
+    event SetTreasury(address oldManager, address newManager);
+    event SetManager(address oldTreasury, address newTreasury);
 
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
 
     // @dev this is the treasury address, where the fees will be sent
-    // this address will be define later, for now we use a arbitrary address
-    address public treasury = 0x0000003FA6D1d52849db6E9EeC9d117FefA2e200;
-    address public manager;
+    // uint256 private constant _TREASURY_SLOT = uint256(keccak256("nativo.treasury")) - 1;
+    uint256 private constant _TREASURY_SLOT = 0xb76b8f07153e093af01f73b720adfb99ea2070ca7e3105f7c8fea3b5ab75663a;
+
+    // uint256 private constant _MANAGER_SLOT = uint256(keccak256("nativo.manager")) - 1;
+    uint256 private constant _MANAGER_SLOT = 0x709669ee5c3ce7b0e78e55c2f47250d0b6830456b94cb9ed5e645a7dd423b1a4;
+
+    function treasury() public view returns (address treasury_) {
+        /// @solidity memory-safe-assembly
+        assembly {
+            treasury_ := sload(_TREASURY_SLOT)
+        }
+    }
+
+    function manager() public view returns (address manager_) {
+        /// @solidity memory-safe-assembly
+        assembly {
+            manager_ := sload(_MANAGER_SLOT)
+        }
+    }
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -43,7 +61,10 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     constructor(bytes32 name_, bytes32 symbol_) ERC20(name_, symbol_) {
         // extras?
         init_ERC3156();
-        manager = msg.sender;
+        assembly {
+            sstore(_TREASURY_SLOT, caller())
+            sstore(_MANAGER_SLOT, caller())
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -193,6 +214,11 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                ERC20 LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @dev totalSupply is the total amount of Native currency in contract (exampl ETH) plus
+     *     the amount of Nativo tokens minted in flash loans, minus one, because the
+     *     flash loan will always be (1+flashMinted), please review the ERC3156.sol
+     */
     function totalSupply() external view override returns (uint256 totalSupply_) {
         /// @solidity memory-safe-assembly
         assembly {
@@ -232,7 +258,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function _flashFeeReceiver() internal view override returns (address) {
-        return treasury;
+        return treasury();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -240,18 +266,18 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function recoverERC20(address token, uint256 amount) public {
-        require(msg.sender == manager, "!manager");
-        ERC20(token).transfer(treasury, amount);
+        require(msg.sender == manager(), "!manager");
+        ERC20(token).transfer(treasury(), amount);
     }
 
     function recoverNativo(address account) external {
-        require(msg.sender == manager, "!manager");
+        require(msg.sender == manager(), "!manager");
 
         // dead address or zero address are consider donation address
         require(account == address(0) || account == address(0xdead), "Invalid account");
 
         uint256 recoverAmount;
-        address _treasury = treasury;
+        address _treasury = treasury();
         /// @solidity memory-safe-assembly
         assembly {
             recoverAmount := sload(account)
@@ -273,14 +299,23 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function setManager(address account) external {
-        require(msg.sender == manager, "!manager");
+        require(msg.sender == manager(), "!manager");
         require(account != address(0), "Invalid account");
-        manager = account;
+
+        assembly {
+            sstore(_MANAGER_SLOT, account)
+        }
+        emit SetManager(msg.sender, account);
     }
 
     function setTreasury(address newTreasury) external {
-        require(msg.sender == manager, "!manager");
+        require(msg.sender == manager(), "!manager");
         require(newTreasury != address(0), "Invalid newTreasury");
-        treasury = newTreasury;
+        address oldTreasury;
+        assembly {
+            oldTreasury := sload(_TREASURY_SLOT)
+            sstore(_TREASURY_SLOT, newTreasury)
+        }
+        emit SetTreasury(oldTreasury, newTreasury);
     }
 }

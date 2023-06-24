@@ -10,10 +10,22 @@ import {ERC3156BorrowerMock} from "./mock/BorrowerMock.sol";
 contract ERC3156Test is Test {
     Nativo public nativo;
     address public immutable EOA = makeAddr("EOA");
+    address public immutable manager = makeAddr("manager");
+    address treasury = makeAddr("treasury");
 
     function setUp() public {
+        vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
         nativo = new Nativo("Wrapped Nativo crypto", "nANY");
+
+        vm.prank(manager);
+        nativo.setTreasury(treasury);
+    }
+
+    function invariantMetadata() public {
+        assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
+        assertEq(nativo.symbol(), "nANY", "Wrong symbol");
+        assertEq(nativo.decimals(), 18, "Wrong decimals");
     }
 
     function testMaxFlashLoan() public {
@@ -60,7 +72,7 @@ contract ERC3156Test is Test {
         vm.expectRevert("!implemented");
         nativo.flashLoan(receiver, address(nativo), 1000, "0x");
 
-        vm.expectRevert(abi.encodeWithSignature("InsufficientAllowance()"));
+        vm.expectRevert(abi.encodeWithSignature("InsufficientBalance()"));
         nativo.flashLoan(receiver, address(nativo), 1000, "");
 
         vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 1001));

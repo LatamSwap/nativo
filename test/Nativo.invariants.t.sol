@@ -14,7 +14,7 @@ contract NativoInvariants is Test {
 
     function setUp() public {
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Native crypto", "Wany");
+        nativo = new Nativo("Wrapped Nativo crypto", "Wany");
         handler = new Handler(nativo);
 
         bytes4[] memory selectors = new bytes4[](10);
@@ -41,13 +41,12 @@ contract NativoInvariants is Test {
     // ETH balance plus the Nativo totalSupply() should always
     // equal the total ETH_SUPPLY.
     function invariant_conservationOfETH() public {
-        /*
-        if(ETH_SUPPLY != address(handler).balance + nativo.totalSupply()) {
+        if (ETH_SUPPLY != address(handler).balance + nativo.totalSupply()) {
             console.log("ETH_SUPPLY", ETH_SUPPLY);
             console.log("address(handler).balance", address(handler).balance);
             console.log("nativo.totalSupply()", nativo.totalSupply());
         }
-        */
+
         assertEq(ETH_SUPPLY, address(handler).balance + nativo.totalSupply());
     }
 
@@ -65,6 +64,11 @@ contract NativoInvariants is Test {
     function invariant_solvencyBalances() public {
         uint256 sumOfBalances = handler.reduceActors(0, this.accumulateBalance);
         assertEq(address(nativo).balance - handler.ghost_forcePushSum(), sumOfBalances);
+    }
+
+    function invariant_internalData() public {
+        assertEq(nativo.treasury(), address(this));
+        assertEq(nativo.manager(), address(this));
     }
 
     function accumulateBalance(uint256 balance, address caller) external view returns (uint256) {

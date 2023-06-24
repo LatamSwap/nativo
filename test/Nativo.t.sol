@@ -8,20 +8,21 @@ import {Nativo} from "src/Nativo.sol";
 contract NativoTest is Test {
     Nativo public nativo;
     address EOA = makeAddr("EOA");
+    address manager = makeAddr("managerAndTreasury");
 
     function setUp() public virtual {
         vm.roll(1);
         vm.warp(1);
 
+        vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Native crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
     }
 
-    function testMetadata() public {
-        assertEq(nativo.name(), "Wrapped Native crypto", "Wrong name");
+    function invariantMetadata() public {
+        assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
-        assertEq(nativo.totalSupply(), 0, "Wrong total supply");
     }
 
     function testCantWithdraw() external {

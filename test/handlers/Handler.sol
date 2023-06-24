@@ -58,6 +58,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function deposit(uint256 amount) public createActor countCall("deposit") {
+        require(currentActor != address(nativo), "nativo cant deposit");
         amount = bound(amount, 0, address(this).balance);
         _pay(currentActor, amount);
 
@@ -68,6 +69,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function withdraw(uint256 actorSeed, uint256 amount) public useActor(actorSeed) countCall("withdraw") {
+        require(currentActor != address(nativo), "nativo cant deposit");
         amount = bound(amount, 0, nativo.balanceOf(currentActor));
         if (amount == 0) ghost_zeroWithdrawals++;
 
@@ -80,6 +82,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function withdrawAll(uint256 actorSeed) public useActor(actorSeed) countCall("withdrawAll") {
+        require(currentActor != address(nativo), "nativo cant deposit");
         uint256 amount = nativo.balanceOf(currentActor);
         if (amount == 0) ghost_zeroWithdrawals++;
 
@@ -92,10 +95,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function withdrawAllTo(uint256 actorSeed, uint256 actorTo) public useActor(actorSeed) countCall("withdrawAllTo") {
-        if (_actors.rand(actorTo) == address(0)) {
-            return;
-        }
-
+        require(currentActor != address(nativo), "nativo cant deposit");
         uint256 amount = nativo.balanceOf(currentActor);
         if (amount == 0) ghost_zeroWithdrawals++;
 
@@ -113,6 +113,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         useActor(actorSeed)
         countCall("approve")
     {
+        require(currentActor != address(nativo), "nativo cant deposit");
         address spender = _actors.rand(spenderSeed);
 
         vm.prank(currentActor);
@@ -124,6 +125,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         useActor(actorSeed)
         countCall("transfer")
     {
+        require(currentActor != address(nativo), "nativo cant deposit");
         address to = _actors.rand(toSeed);
 
         amount = bound(amount, 0, nativo.balanceOf(currentActor));
@@ -138,6 +140,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         useActor(actorSeed)
         countCall("transferFrom")
     {
+        require(currentActor != address(nativo), "nativo cant deposit");
         address from = _actors.rand(fromSeed);
         address to = _actors.rand(toSeed);
 
@@ -156,6 +159,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function sendFallback(uint256 amount) public createActor countCall("sendFallback") {
+        require(currentActor != address(nativo), "nativo cant deposit");
         amount = bound(amount, 0, address(this).balance);
         _pay(currentActor, amount);
 
@@ -166,10 +170,9 @@ contract Handler is CommonBase, StdCheats, StdUtils {
     }
 
     function depositTo(uint256 actorTo, uint256 amount) public createActor countCall("depositTo") {
+        require(currentActor != address(nativo), "nativo cant deposit");
         amount = bound(amount, 0, address(this).balance);
         _pay(currentActor, amount);
-
-        uint256 balancePrev = nativo.balanceOf(_actors.rand(actorTo));
 
         vm.prank(currentActor);
         nativo.depositTo{value: amount}(_actors.rand(actorTo));
@@ -182,6 +185,7 @@ contract Handler is CommonBase, StdCheats, StdUtils {
         useActor(actorSeed)
         countCall("withdrawTo")
     {
+        require(currentActor != address(nativo), "nativo cant deposit");
         amount = bound(amount, 0, nativo.balanceOf(currentActor));
         if (amount == 0) ghost_zeroWithdrawals++;
 
