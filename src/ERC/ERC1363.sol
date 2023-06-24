@@ -2,25 +2,59 @@
 pragma solidity ^0.8.19;
 
 import {ERC20} from "./ERC20.sol";
-
-// import {IERC1363} from "openzeppelin/interfaces/IERC1363.sol";
 import {IERC1363Spender} from "openzeppelin/interfaces/IERC1363Spender.sol";
 import {IERC1363Receiver} from "openzeppelin/interfaces/IERC1363Receiver.sol";
 
 /// @dev implementation of https://eips.ethereum.org/EIPS/eip-1363
 
 abstract contract ERC1363 is ERC20 {
+    /*//////////////////////////////////////////////////////////////
+                        PRIVATE CONSTANTS
+    //////////////////////////////////////////////////////////////*/
+
+    // bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"))
+    bytes4 private constant _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED =
+        bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"));
+
+    // bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))
+    bytes4 private constant _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED =
+        bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"));
+
+    /*//////////////////////////////////////////////////////////////
+                             ERRORS
+    //////////////////////////////////////////////////////////////*/
+
+    error IERC1363Spender_onApprovalReceived_rejected();
+    error IERC1363Receiver_onApprovalReceived_rejected();
+
+    /*//////////////////////////////////////////////////////////////
+                     ERC1363 METHODS AND LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Approves and then calls the receiving contract with empty data
+    /// @dev The receiving contract must implement `onApprovalReceived(address,uint256,bytes)`
+    /// @param spender The contract permitted to spend the tokens
+    /// @param amount The amount of tokens to spend
+    /// @return true unless the `spender` contract throws error or does not implement `onApprovalReceived(address,uint256,bytes)`
     function approveAndCall(address spender, uint256 amount) external returns (bool) {
         return approveAndCall(spender, amount, "");
     }
 
+    /// @notice Approves and then calls the receiving contract
+    /// @dev The receiving contract must implement `onApprovalReceived(address,uint256,bytes)`
+    /// @param spender The contract permitted to spend the tokens
+    /// @param amount The amount of tokens to spend
+    /// @param data Additional data with no specified format to send to the `spender` contract
+    /// @return true unless the `spender` contract throws error or does not implement `onApprovalReceived(address,uint256,bytes)`
     function approveAndCall(address spender, uint256 amount, bytes memory data) public returns (bool) {
         _approve(msg.sender, spender, amount);
         bytes4 response = IERC1363Spender(spender).onApprovalReceived(msg.sender, amount, data);
-        /*
-         * 0x7b04a2d0 === bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"))
-         */
-        require(response == 0x7b04a2d0, "IERC1363Spender: onApprovalReceived rejected");
+
+        // the response must equal to _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED
+        // that is `bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"))`
+        if (response != _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED) {
+            revert IERC1363Spender_onApprovalReceived_rejected();
+        }
         return true;
     }
 
@@ -31,8 +65,11 @@ abstract contract ERC1363 is ERC20 {
     function transferAndCall(address to, uint256 amount, bytes memory data) public returns (bool) {
         _transfer(msg.sender, to, amount);
         bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, msg.sender, amount, data);
-        // 0x88a7ca5c == `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
-        require(response == 0x88a7ca5c, "IERC1363Receiver: onApprovalReceived rejected");
+        // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
+        // that is `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
+        if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
+            revert IERC1363Receiver_onApprovalReceived_rejected();
+        }
         return true;
     }
 
@@ -44,12 +81,17 @@ abstract contract ERC1363 is ERC20 {
         _spendAllowance(from, msg.sender, amount);
         _transfer(from, to, amount);
         bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, from, amount, data);
-        // 0x88a7ca5c == `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
-        require(response == 0x88a7ca5c, "IERC1363Receiver: onApprovalReceived rejected");
+        // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
+        // that is `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
+        if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
+            revert IERC1363Receiver_onApprovalReceived_rejected();
+        }
         return true;
     }
 
-    // ERC165 interface support
+    /*//////////////////////////////////////////////////////////////
+                     ERC165 INTERFACE SUPPORT
+    //////////////////////////////////////////////////////////////*/
     function supportsInterface(bytes4 interfaceId) external view returns (bool result) {
         /*
          * Note: the ERC-165 identifier for this interface is 0xb0202a11.
