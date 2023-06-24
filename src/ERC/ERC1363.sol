@@ -109,7 +109,7 @@ abstract contract ERC1363 is ERC20 {
     }
 
     function depositTransferAndCall(address to, uint256 amount, bytes memory data) external payable returns (bool) {
-        _mint(to, msg.value);
+        _mint(msg.sender, msg.value);
         return transferAndCall(to, amount, data);
     }
 
