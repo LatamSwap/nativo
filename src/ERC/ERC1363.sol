@@ -62,6 +62,11 @@ abstract contract ERC1363 is ERC20 {
         return transferAndCall(to, amount, "");
     }
 
+    /// @notice Transfer tokens to a specified address and then execute a callback on recipient
+    /// @param to The address to transfer `to`
+    /// @param amount The amount to be transferred
+    /// @param data Additional data with no specified format to send to the recipient
+    /// @return true unless the recipient contract throws error , in that case it reverts.
     function transferAndCall(address to, uint256 amount, bytes memory data) public returns (bool) {
         _transfer(msg.sender, to, amount);
         bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, msg.sender, amount, data);
@@ -78,8 +83,12 @@ abstract contract ERC1363 is ERC20 {
     }
 
     function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool) {
+        // @dev _spendAllowance will revert if not has enough allowance
         _spendAllowance(from, msg.sender, amount);
+        // now lets transfer nativo tokens to the `to` address
         _transfer(from, to, amount);
+
+        // now lets call the `onTransferReceived` function of the `to` address
         bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, from, amount, data);
         // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
         // that is `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
