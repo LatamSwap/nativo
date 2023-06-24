@@ -59,9 +59,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     constructor(bytes32 name_, bytes32 symbol_) ERC20(name_, symbol_) {
-        // extras?
         init_ERC3156();
         assembly {
+            // addres of treasury and manager is the deployer
             sstore(_TREASURY_SLOT, caller())
             sstore(_MANAGER_SLOT, caller())
         }
@@ -103,7 +103,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         assembly {
             let _balance := sload(caller())
             if lt(_balance, amount) {
-                mstore(0x00, 0xf4d678b8) // 0xf4d678b8 = InsufficientBalance()
+                // revert error, 0xf4d678b8 = InsufficientBalance()
+                mstore(0x00, 0xf4d678b8)
                 revert(0x1c, 0x04)
             }
             sstore(caller(), sub(_balance, amount))
@@ -111,10 +112,12 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
             // Transfer the ETH and store if it succeeded or not.
             let success := call(gas(), caller(), amount, 0, 0, 0, 0)
             if iszero(success) {
-                mstore(0x00, 0x750b219c) // 0x750b219c = WithdrawFailed()
+                // revert error, 0x750b219c = WithdrawFailed()
+                mstore(0x00, 0x750b219c)
                 revert(0x1c, 0x04)
             }
         }
+        // now burn event
         emit Transfer(msg.sender, address(0), amount);
     }
 
@@ -132,26 +135,33 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         assembly {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
+                // revert error, 0x9fabe1c1 = AddressZero()
                 mstore(0x00, 0x750b219c) // 0x9fabe1c1 = AddressZero()
                 revert(0x1c, 0x04)
             }
             // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
             let _balance := sload(caller())
             if lt(_balance, amount) {
-                mstore(0x00, 0xf4d678b8) // 0xf4d678b8 = InsufficientBalance()
+                // revert error, 0xf4d678b8 = InsufficientBalance()
+                mstore(0x00, 0xf4d678b8)
                 revert(0x1c, 0x04)
             }
+
+            // not risk of underflow because of the previous check
             sstore(caller(), sub(_balance, amount))
 
             // Transfer the ETH and store if it succeeded or not.
             let success := call(gas(), to, amount, 0, 0, 0, 0)
             if iszero(success) {
-                mstore(0x00, 0x750b219c) // 0x750b219c = WithdrawFailed()
+                // revert error, 0x750b219c = WithdrawFailed()
+                mstore(0x00, 0x750b219c)
                 revert(0x1c, 0x04)
             }
         }
 
+        // msg.sender is transfering Nativo to `to` address
         emit Transfer(msg.sender, to, amount);
+        // now burn event, `to` address is burning Nativo
         emit Transfer(to, address(0), amount);
     }
 
@@ -166,7 +176,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         assembly {
             // if (to == address(0)) revert AddressZero();
             if iszero(to) {
-                mstore(0x00, 0x750b219c) // 0x9fabe1c1 = AddressZero()
+                // revert error, 0x9fabe1c1 = AddressZero()
+                mstore(0x00, 0x9fabe1c1)
                 revert(0x1c, 0x04)
             }
         }
@@ -182,14 +193,15 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
             // Transfer the ETH and store if it succeeded or not.
             let success := call(gas(), to, amount, 0, 0, 0, 0)
             if iszero(success) {
-                mstore(0x00, 0x750b219c) // 0x750b219c = WithdrawFailed()
+                // revert error, 0x750b219c = WithdrawFailed()
+                mstore(0x00, 0x750b219c)
                 revert(0x1c, 0x04)
             }
         }
 
-        // transfer to
+        // transfer event from `from` to `to`
         emit Transfer(from, to, amount);
-        // now burn event
+        // now burn event, transfer from `to` to address(0)
         emit Transfer(to, address(0), amount);
     }
 
@@ -203,6 +215,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         assembly {
             sstore(caller(), add(sload(caller()), callvalue()))
         }
+        // now mint event
         emit Transfer(address(0), msg.sender, msg.value);
     }
 
