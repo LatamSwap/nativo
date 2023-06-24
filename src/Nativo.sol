@@ -6,8 +6,7 @@
 /// a way to wrap the native cryptocurrency of any supported EVM network into
 /// an ERC20 token, thus enabling more sophisticated interaction with smart
 /// contracts and DApps on various blockchains.
-
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 import {ERC20} from "./ERC/ERC20.sol";
 import {ERC1363} from "./ERC/ERC1363.sol";
