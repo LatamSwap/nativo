@@ -129,7 +129,6 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     /// @param to The address to send the native currency
     /// @param amount The amount of Nativo tokens to burn
     function withdrawTo(address to, uint256 amount) public {
-        // _burn(msg.sender, amount);
         /// @solidity memory-safe-assembly
         assembly {
             // if (to == address(0)) revert AddressZero();
@@ -138,6 +137,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                 mstore(0x00, 0x9fabe1c1)
                 revert(0x1c, 0x04)
             }
+
+            // the following code is the same as _burn(msg.sender, amount);
+
             // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
             let _balance := sload(caller())
             if lt(_balance, amount) {
@@ -330,7 +332,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     function setManager(address account) external {
         require(msg.sender == manager(), "!manager");
-        require(account != address(0), "Invalid account");
+        require(account != address(0), "!address(0)");
 
         assembly {
             sstore(_MANAGER_SLOT, account)
@@ -340,7 +342,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     function setTreasury(address newTreasury) external {
         require(msg.sender == manager(), "!manager");
-        require(newTreasury != address(0), "Invalid newTreasury");
+        require(newTreasury != address(0), "!address(0)");
         address oldTreasury;
         assembly {
             oldTreasury := sload(_TREASURY_SLOT)

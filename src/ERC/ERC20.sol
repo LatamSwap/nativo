@@ -206,13 +206,14 @@ abstract contract ERC20 {
         emit Transfer(address(0), to, amount);
     }
 
-    function _burn(address from, uint256 amount) internal virtual {
+    function _burn(address from, uint256 amount) internal {
         /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[from] -= amount;
             let _balance := sload(from)
             if lt(_balance, amount) {
-                mstore(0x00, 0xf4d678b8) // `InsufficientBalance()`.
+                // `InsufficientBalance()`.
+                mstore(0x00, 0xf4d678b8)
                 revert(0x1c, 0x04)
             }
             sstore(from, sub(_balance, amount))
