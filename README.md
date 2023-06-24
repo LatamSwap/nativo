@@ -24,6 +24,10 @@
 
 # Deployments
 
+## Patex Sepolia
+
+Contract Address: [`0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d`](https://testnet.patexscan.io/address/0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d/contracts)
+
 ## Avax fuji
 
 
