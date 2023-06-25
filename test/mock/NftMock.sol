@@ -13,12 +13,14 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
 
     uint256 public tokenid;
     address _nativo;
+    bool badImplementation;
 
     event TokensReceived(address indexed operator, address indexed sender, uint256 amount, bytes data);
     event TokensApproved(address indexed sender, uint256 amount, bytes data);
 
-    constructor(address nativo_) ERC721("TestNFT", "TestNFT") {
+    constructor(address nativo_, bool _badImplementation) ERC721("TestNFT", "TestNFT") {
         _nativo = nativo_;
+        badImplementation = _badImplementation;
     }
 
     function onTransferReceived(address spender, address sender, uint256 amount, bytes memory data)
@@ -31,6 +33,10 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
         emit TokensReceived(spender, sender, amount, data);
 
         _transferReceived(spender, sender, amount, data);
+        
+        if (badImplementation) {
+            return bytes4(0);
+        }
 
         return IERC1363Receiver.onTransferReceived.selector;
     }
@@ -42,6 +48,10 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
 
         _approvalReceived(sender, amount, data);
 
+        if (badImplementation) {
+            return bytes4(0);
+        }
+        
         return IERC1363Spender.onApprovalReceived.selector;
     }
 

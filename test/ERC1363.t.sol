@@ -3,7 +3,7 @@ pragma solidity >=0.8.10;
 
 import "forge-std/Test.sol";
 
-import {Nativo} from "src/Nativo.sol";
+import {Nativo, ERC1363} from "src/Nativo.sol";
 import {NFTtoken} from "./mock/NftMock.sol";
 
 // Payable token tests
@@ -17,7 +17,7 @@ contract ERC1363Test is Test {
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
         nativo = new Nativo("Wrapped Nativo crypto", "nANY");
-        nft = new NFTtoken(address(nativo));
+        nft = new NFTtoken(address(nativo), false);
     }
 
     function invariantMetadata() public {
@@ -46,11 +46,29 @@ contract ERC1363Test is Test {
         vm.stopPrank();
     }
 
+    function testReverts() public {
+        nft = new NFTtoken(address(nativo), true);
+
+        nativo.deposit{value: 1 ether}();
+        vm.expectRevert(ERC1363.Receiver_transferReceived_rejected.selector);
+        nativo.transferAndCall(address(nft), 0.5 ether);
+
+        vm.expectRevert(ERC1363.Spender_onApprovalReceived_rejected.selector);
+        nativo.approveAndCall(address(nft), 0.5 ether);
+        
+        nativo.transfer(EOA, 1 ether);
+        vm.prank(EOA);
+        nativo.approve(address(this), 1 ether);
+        vm.expectRevert(ERC1363.Receiver_transferReceived_rejected.selector);
+        nativo.transferFromAndCall(EOA, address(nft), 0.5 ether);
+
+    }
+
     function testTransferAndCall() public {
         vm.deal(EOA, 1 ether);
         vm.startPrank(EOA);
 
-        vm.expectRevert();
+        vm.expectRevert(bytes4(0));
         nativo.transferAndCall(address(nft), 1 ether);
         assertEq(nativo.allowance(EOA, address(nft)), 0);
 

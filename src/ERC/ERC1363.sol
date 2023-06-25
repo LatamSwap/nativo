@@ -24,8 +24,8 @@ abstract contract ERC1363 is ERC20 {
                              ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    error IERC1363Spender_onApprovalReceived_rejected();
-    error IERC1363Receiver_onApprovalReceived_rejected();
+    error Spender_onApprovalReceived_rejected();
+    error Receiver_transferReceived_rejected();
 
     /*//////////////////////////////////////////////////////////////
                      ERC1363 METHODS AND LOGIC
@@ -53,7 +53,7 @@ abstract contract ERC1363 is ERC20 {
         // the response must equal to _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED
         // that is `bytes4(keccak256("onApprovalReceived(address,uint256,bytes)"))`
         if (response != _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED) {
-            revert IERC1363Spender_onApprovalReceived_rejected();
+            revert Spender_onApprovalReceived_rejected();
         }
         return true;
     }
@@ -73,7 +73,7 @@ abstract contract ERC1363 is ERC20 {
         // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
         // that is `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
         if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
-            revert IERC1363Receiver_onApprovalReceived_rejected();
+            revert Receiver_transferReceived_rejected();
         }
         return true;
     }
@@ -93,7 +93,7 @@ abstract contract ERC1363 is ERC20 {
         // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
         // that is `bytes4(keccak256("onTransferReceived(address,address,uint256,bytes)"))`
         if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
-            revert IERC1363Receiver_onApprovalReceived_rejected();
+            revert Receiver_transferReceived_rejected();
         }
         return true;
     }
