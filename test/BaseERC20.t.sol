@@ -42,6 +42,23 @@ contract Erc20Test is Test {
         token = new Mock();
     }
 
+    function testMetadata() public {
+        Mock _token = new Mock();
+        assertEq(_token.name(), "Mock");
+        assertEq(_token.symbol(), "MOCK");
+        bytes32 expectedDomainSeparator = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256("Mock"),
+                keccak256("1"),
+                block.chainid,
+                address(_token)
+            )
+        );
+
+        assertEq(token.DOMAIN_SEPARATOR(), expectedDomainSeparator);
+    }
+
     function testMint(uint256 toMint, uint256 toBurn) public {
         toBurn = bound(toBurn, 0, toMint);
 
@@ -64,6 +81,11 @@ contract Erc20Test is Test {
         token.transfer(to, amount);
         if (to != address(this)) assertEq(token.balanceOf(address(this)), 0);
         assertEq(token.balanceOf(to), amount);
+    }
+
+    function testTransferError() public {
+        vm.expectRevert(ERC20.InsufficientBalance.selector);
+        token.transfer(address(0xBEEF), 1 ether);
     }
 
     function testTransfer2(address from, address to, uint256 amount) public {
@@ -133,6 +155,11 @@ contract Erc20Test is Test {
         token.burn(address(0xBEEF), 0.9e18);
 
         assertEq(token.balanceOf(address(0xBEEF)), 0.1e18);
+    }
+
+    function testBurnError() public {
+        vm.expectRevert(ERC20.InsufficientBalance.selector);
+        token.burn(address(0xBEEF), 1 ether);
     }
 
     function testApprove() public {
