@@ -49,14 +49,26 @@ contract Erc20Test is Test {
         bytes32 expectedDomainSeparator = keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256("Mock"),
+                keccak256(bytes(_token.name())),
                 keccak256("1"),
                 block.chainid,
                 address(_token)
             )
         );
 
-        assertEq(token.DOMAIN_SEPARATOR(), expectedDomainSeparator);
+        assertEq(_token.DOMAIN_SEPARATOR(), expectedDomainSeparator);
+
+        vm.chainId(31337);
+        expectedDomainSeparator = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256("Mock"),
+                keccak256("1"),
+                block.chainid,
+                address(_token)
+            )
+        );
+        assertEq(_token.DOMAIN_SEPARATOR(), expectedDomainSeparator);
     }
 
     function testMint(uint256 toMint, uint256 toBurn) public {

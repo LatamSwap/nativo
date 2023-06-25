@@ -74,6 +74,31 @@ contract NativoUXGasTest is Test, Benchmark {
         assertEq(nativo.balanceOf(EOAnativo), 0 ether);
     }
 
+    function testBenchmarkWithdrawTo() public {
+        weth.deposit{value: 1 ether}();
+        weth.transfer(address(uxWithWETH), 1 ether);
+
+        nativo.deposit{value: 1 ether}();
+        nativo.transfer(address(uxWithNativo), 1 ether);
+
+        // lets try to withdrawTo using weth
+        vm.startPrank(EOAweth);
+        benchmarkStart("weth.withdrawTo()");
+        uxWithWETH.withdrawTo(address(0x01), 0.1 ether);
+        benchmarkEnd();
+        vm.stopPrank();
+
+        // lets try to withdrawTo using nativo
+        vm.startPrank(EOAnativo);
+        benchmarkStart("nativo.withdrawTo()");
+        uxWithNativo.withdrawTo(address(0x02), 0.1 ether);
+        benchmarkEnd();
+        vm.stopPrank();
+
+        assertEq(address(0x01).balance, 0.1 ether);
+        assertEq(address(0x02).balance, 0.1 ether);
+    }
+
     function testBenchmarkWithdrawAllTo() public {
         weth.deposit{value: 1 ether}();
         weth.transfer(address(uxWithWETH), 1 ether);
