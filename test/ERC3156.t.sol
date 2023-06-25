@@ -53,9 +53,9 @@ contract ERC3156Test is Test {
     function testFlashFee() public {
         assertEq(nativo.flashFee(address(nativo), 0), 0);
 
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSignature("ERC3156UnsupportedToken(address)", address(0)));
         nativo.flashFee(address(0), 0);
-        vm.expectRevert();
+        vm.expectRevert(abi.encodeWithSignature("ERC3156UnsupportedToken(address)", address(0xdead)));
         nativo.flashFee(address(0xdead), 0);
 
         // 0.09% fee
@@ -67,6 +67,10 @@ contract ERC3156Test is Test {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         vm.expectRevert(abi.encodeWithSignature("ERC3156ExceededMaxLoan(uint256)", 0));
         nativo.flashLoan(receiver, address(nativo), 10000, "");
+
+        address otherToken = makeAddr("otherToken");
+        vm.expectRevert(abi.encodeWithSignature("ERC3156UnsupportedToken(address)", otherToken));
+        nativo.flashLoan(receiver, otherToken, 10000, "");
 
         nativo.deposit{value: 10009}();
         vm.expectRevert("!implemented");
@@ -94,7 +98,7 @@ contract ERC3156Test is Test {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         nativo.deposit{value: 10_000}();
 
-        vm.expectRevert();
+        vm.expectRevert("ERC3156: min amount is 1000 wei");
         nativo.flashLoan(receiver, address(nativo), 9999, "");
     }
 
