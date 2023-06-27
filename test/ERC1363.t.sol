@@ -68,7 +68,7 @@ contract ERC1363Test is Test {
         vm.deal(EOA, 1 ether);
         vm.startPrank(EOA);
 
-        vm.expectRevert(bytes4(0));
+        vm.expectRevert(abi.encodeWithSignature("InsufficientBalance()"));
         nativo.transferAndCall(address(nft), 1 ether);
         assertEq(nativo.allowance(EOA, address(nft)), 0);
 
