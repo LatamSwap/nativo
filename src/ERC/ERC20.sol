@@ -33,6 +33,9 @@ abstract contract ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     // Balances of users will be stored onfrom 0x000000000000
+    // reserve slots for balance storage
+    uint256[1 << 160] private __gapBalances;
+
 
     mapping(address user => mapping(address spender => uint256 amount)) public allowance;
 
