@@ -108,4 +108,14 @@ contract NativoErrorsTest is Test {
         vm.expectRevert("!address(0)");
         nativo.setTreasury(address(0));
     }
+
+    function testDontCollisionWithBalances(address from, address spender, uint256 amount) public{
+        vm.prank(from);
+        vm.record();
+        nativo.approve(spender, amount);
+        (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(
+            address(nativo)
+        );
+        assertGt(uint256(writes[0]), type(uint160).max);
+    }
 }
