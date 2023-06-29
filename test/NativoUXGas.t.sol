@@ -9,7 +9,9 @@ import {Benchmark} from "test/Benchmark.sol";
 import {WETH} from "solmate/tokens/WETH.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
 
-contract NativoUXGasTest is Test, Benchmark {
+import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
+
+contract NativoUXGasTest is Test, GasSnapshot {
     Nativo public nativo;
     WETH public weth;
     address EOAweth = makeAddr("EOAweth");
@@ -37,16 +39,16 @@ contract NativoUXGasTest is Test, Benchmark {
     function testBenchmarkDepositTo() public {
         // lets try to depositTo using weth
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.depositTo()");
+        snapStart("weth.depositTo()");
         uxWithWETH.depositTo{value: 1 ether}(address(0x01));
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         // lets try to depositTo using nativo
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.depositTo()");
+        snapStart("nativo.depositTo()");
         uxWithNativo.depositTo{value: 1 ether}(address(0x02));
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         assertEq(weth.balanceOf(address(0x01)), 1 ether);
@@ -57,17 +59,17 @@ contract NativoUXGasTest is Test, Benchmark {
         // lets try to withdrawAll using weth
         vm.startPrank(EOAweth);
         weth.deposit{value: 1 ether}();
-        benchmarkStart("weth.withdrawAll()");
+        snapStart("weth.withdrawAll()");
         weth.withdraw(weth.balanceOf(EOAweth));
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         // lets try to withdrawAll using nativo
         vm.startPrank(EOAnativo);
         nativo.deposit{value: 1 ether}();
-        benchmarkStart("nativo.withdrawAll()");
+        snapStart("nativo.withdrawAll()");
         nativo.withdrawAll();
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         assertEq(EOAnativo.balance, 1.1 ether);
@@ -83,16 +85,16 @@ contract NativoUXGasTest is Test, Benchmark {
 
         // lets try to withdrawTo using weth
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.withdrawTo()");
+        snapStart("weth.withdrawTo()");
         uxWithWETH.withdrawTo(address(0x01), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         // lets try to withdrawTo using nativo
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.withdrawTo()");
+        snapStart("nativo.withdrawTo()");
         uxWithNativo.withdrawTo(address(0x02), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         assertEq(address(0x01).balance, 0.1 ether);
@@ -108,16 +110,16 @@ contract NativoUXGasTest is Test, Benchmark {
 
         // lets try to withdrawAllTo using weth
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.withdrawAllTo()");
+        snapStart("weth.withdrawAllTo()");
         uxWithWETH.withdrawAllTo(address(0x01));
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         // lets try to withdrawAllTo using nativo
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.withdrawAllTo()");
+        snapStart("nativo.withdrawAllTo()");
         uxWithNativo.withdrawAllTo(address(0x02));
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         assertEq(address(0x01).balance, 1 ether);
@@ -136,14 +138,14 @@ contract NativoUXGasTest is Test, Benchmark {
         vm.stopPrank();
 
         // lets try to withdrawFromTo using weth
-        benchmarkStart("weth.withdrawFromTo()");
+        snapStart("weth.withdrawFromTo()");
         uxWithWETH.withdrawFromTo(address(EOAweth), address(0x01), 0.5 ether);
-        benchmarkEnd();
+        snapEnd();
 
         // lets try to withdrawFromTo using nativo
-        benchmarkStart("nativo.withdrawFromTo()");
+        snapStart("nativo.withdrawFromTo()");
         uxWithNativo.withdrawFromTo(address(EOAnativo), address(0x02), 0.5 ether);
-        benchmarkEnd();
+        snapEnd();
 
         assertEq(address(0x01).balance, 0.5 ether);
         assertEq(address(0x02).balance, 0.5 ether);
@@ -161,14 +163,14 @@ contract NativoUXGasTest is Test, Benchmark {
         vm.stopPrank();
 
         // lets try to withdrawAllFromTo using weth
-        benchmarkStart("weth.withdrawAllFromTo()");
+        snapStart("weth.withdrawAllFromTo()");
         uxWithWETH.withdrawAllFromTo(address(EOAweth), address(0x01));
-        benchmarkEnd();
+        snapEnd();
 
         // lets try to withdrawAllFromTo using nativo
-        benchmarkStart("nativo.withdrawAllFromTo()");
+        snapStart("nativo.withdrawAllFromTo()");
         uxWithNativo.withdrawAllFromTo(address(EOAnativo), address(0x02));
-        benchmarkEnd();
+        snapEnd();
 
         assertEq(address(0x01).balance, 1 ether);
         assertEq(address(0x02).balance, 1 ether);

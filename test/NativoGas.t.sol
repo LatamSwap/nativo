@@ -6,8 +6,10 @@ import "forge-std/Test.sol";
 import {Nativo} from "src/Nativo.sol";
 import {DeployWeth} from "test/mock/WethDeploy.sol";
 import {Benchmark} from "test/Benchmark.sol";
+import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
 
-contract NativoGasTest is Test, Benchmark {
+
+contract NativoGasTest is Test, GasSnapshot {
     Nativo public nativo;
     Nativo public weth;
     address EOAweth = makeAddr("EOAweth");
@@ -71,21 +73,21 @@ contract NativoGasTest is Test, Benchmark {
     }
 
     function testBenchmarkMetadata() public {
-        benchmarkStart("nativo.decimals()");
+        snapStart("nativo.decimals()");
         nativo.decimals();
-        benchmarkEnd();
+        snapEnd();
 
-        benchmarkStart("weth.decimals()");
+        snapStart("weth.decimals()");
         weth.decimals();
-        benchmarkEnd();
+        snapEnd();
 
-        benchmarkStart("nativo.totalSupply()");
+        snapStart("nativo.totalSupply()");
         nativo.totalSupply();
-        benchmarkEnd();
+        snapEnd();
 
-        benchmarkStart("weth.totalSupply()");
+        snapStart("weth.totalSupply()");
         weth.totalSupply();
-        benchmarkEnd();
+        snapEnd();
     }
 
     function testDeposit() public {
@@ -93,52 +95,52 @@ contract NativoGasTest is Test, Benchmark {
         vm.deal(EOAnativo, 10 ether);
 
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.deposit()");
+        snapStart("nativo.deposit()");
         nativo.deposit{value: 5 ether}();
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.deposit()");
+        snapStart("weth.deposit()");
         weth.deposit{value: 5 ether}();
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         uint256 balance = 1;
-        benchmarkStart("nativo.balanceOf()");
+        snapStart("nativo.balanceOf()");
         balance = nativo.balanceOf(address(this));
-        benchmarkEnd();
+        snapEnd();
         assertEq(nativo.balanceOf(address(this)), balance);
 
         balance = 1;
 
-        benchmarkStart("weth.balanceOf()");
+        snapStart("weth.balanceOf()");
         balance = weth.balanceOf(address(this));
-        benchmarkEnd();
+        snapEnd();
         assertEq(weth.balanceOf(address(this)), balance);
 
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.withdraw()");
+        snapStart("weth.withdraw()");
         weth.withdraw(4 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.withdraw()");
+        snapStart("nativo.withdraw()");
         nativo.withdraw(4 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.transfer()");
+        snapStart("weth.transfer()");
         weth.transfer(address(0x01), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.transfer()");
+        snapStart("nativo.transfer()");
         nativo.transfer(address(0x02), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
     }
 
@@ -153,27 +155,27 @@ contract NativoGasTest is Test, Benchmark {
         weth.deposit{value: 1 ether}();
 
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.approve()");
+        snapStart("weth.approve()");
         weth.approve(address(0x01), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.approve()");
+        snapStart("nativo.approve()");
         nativo.approve(address(0x01), 0.1 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(address(0x01));
-        benchmarkStart("nativo.transferFrom()");
+        snapStart("nativo.transferFrom()");
         nativo.transferFrom(EOAnativo, address(0x02), 0.01 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(address(0x01));
-        benchmarkStart("weth.transferFrom()");
+        snapStart("weth.transferFrom()");
         weth.transferFrom(EOAweth, address(0x02), 0.01 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
     }
 
@@ -188,27 +190,31 @@ contract NativoGasTest is Test, Benchmark {
         weth.deposit{value: 1 ether}();
 
         vm.startPrank(EOAweth);
-        benchmarkStart("weth.approve() infinity");
+        snapStart("weth.approve() infinity");
         weth.approve(address(0x01), type(uint256).max);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(EOAnativo);
-        benchmarkStart("nativo.approve() infinity");
+        snapStart("nativo.approve() infinity");
         nativo.approve(address(0x01), type(uint256).max);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(address(0x01));
-        benchmarkStart("nativo.transferFrom() infinity");
+        snapStart("nativo.transferFrom() infinity");
         nativo.transferFrom(EOAnativo, address(0x02), 0.01 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
 
         vm.startPrank(address(0x01));
-        benchmarkStart("weth.transferFrom() infinity");
+        snapStart("weth.transferFrom() infinity");
         weth.transferFrom(EOAweth, address(0x02), 0.01 ether);
-        benchmarkEnd();
+        snapEnd();
         vm.stopPrank();
+    }
+
+    function testNewUx() public {
+
     }
 }
