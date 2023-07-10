@@ -55,13 +55,12 @@ contract ERC1363Test is Test {
 
         vm.expectRevert(ERC1363.Spender_onApprovalReceived_rejected.selector);
         nativo.approveAndCall(address(nft), 0.5 ether);
-        
+
         nativo.transfer(EOA, 1 ether);
         vm.prank(EOA);
         nativo.approve(address(this), 1 ether);
         vm.expectRevert(ERC1363.Receiver_transferReceived_rejected.selector);
         nativo.transferFromAndCall(EOA, address(nft), 0.5 ether);
-
     }
 
     function testTransferAndCall() public {

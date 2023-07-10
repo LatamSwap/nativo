@@ -8,7 +8,6 @@ import {DeployWeth} from "test/mock/WethDeploy.sol";
 import {Benchmark} from "test/Benchmark.sol";
 import {GasSnapshot} from "forge-gas-snapshot/GasSnapshot.sol";
 
-
 contract NativoGasTest is Test, GasSnapshot {
     Nativo public nativo;
     Nativo public weth;
@@ -214,7 +213,5 @@ contract NativoGasTest is Test, GasSnapshot {
         vm.stopPrank();
     }
 
-    function testNewUx() public {
-
-    }
+    function testNewUx() public {}
 }
