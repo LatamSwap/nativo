@@ -14,7 +14,7 @@ contract NativoInvariants is Test {
 
     function setUp() public {
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "Wany");
+        nativo = new Nativo("Wrapped Nativo crypto", "Wany", address(this), address(this));
         handler = new Handler(nativo);
 
         bytes4[] memory selectors = new bytes4[](10);

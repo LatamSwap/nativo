@@ -14,7 +14,7 @@ contract AvaxDeployScript is Script {
     function run() public returns (address nativoXDAI) {
         vm.startBroadcast();
         // name and symbol depend on the blockchain we are deploying
-        nativoXDAI = address(new Nativo("Nativo Wrapped XDAI", "nXDAI"));
+        nativoXDAI = address(new Nativo("Nativo Wrapped XDAI", "nXDAI", address(this), address(this)));
     }
 }
 

@@ -18,7 +18,7 @@ contract NativoAdminTest is Test {
 
         vm.prank(deployer);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY", deployer, deployer);
     }
 
     function testRecoverERC20() external {

@@ -14,6 +14,6 @@ contract AvaxDeployScript is Script {
     function run() public returns (address nativoLAC) {
         vm.startBroadcast();
         // name and symbol depend on the blockchain we are deploying
-        nativoLAC = address(new Nativo("Nativo Wrapped LAC", "nLAC"));
+        nativoLAC = address(new Nativo("Nativo Wrapped LAC", "nLAC", address(this), address(this)));
     }
 }

@@ -16,7 +16,7 @@ contract ERC1363Test is Test {
     function setUp() public {
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "nANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "nANY", manager, manager);
         nft = new NFTtoken(address(nativo), false);
     }
 

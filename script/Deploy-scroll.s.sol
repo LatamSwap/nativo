@@ -14,7 +14,7 @@ contract AvaxDeployScript is Script {
     function run() public returns (address nativoETH) {
         vm.startBroadcast();
         // name and symbol depend on the blockchain we are deploying
-        nativoETH = address(new Nativo("Nativo Wrapped ETH", "nETH"));
+        nativoETH = address(new Nativo("Nativo Wrapped ETH", "nETH", address(this), address(this)));
     }
 }
 

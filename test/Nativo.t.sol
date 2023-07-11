@@ -16,7 +16,7 @@ contract NativoTest is Test {
 
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY", manager, manager);
     }
 
     function invariantMetadata() public {

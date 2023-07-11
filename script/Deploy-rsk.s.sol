@@ -14,6 +14,6 @@ contract AvaxDeployScript is Script {
     function run() public returns (address nativoRSK) {
         vm.startBroadcast();
         // name and symbol depend on the blockchain we are deploying
-        nativoRSK = address(new Nativo("Nativo RSK Smart Bitcoin", "nRBTC"));
+        nativoRSK = address(new Nativo("Nativo RSK Smart Bitcoin", "nRBTC", address(this), address(this)));
     }
 }

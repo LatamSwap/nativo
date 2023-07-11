@@ -21,7 +21,7 @@ contract NativoGasTest is Test, GasSnapshot {
         // name and symbol depend on the blockchain we are deploying
 
         // address treasury = 0x00000000fFFffDB6Fc1F34ac4aD25dd9eF7031eF;
-        address _deployedNativo = address(new Nativo("Nativo Wrapped Ether", "WETH"));
+        address _deployedNativo = address(new Nativo("Nativo Wrapped Ether", "WETH", address(this), address(this)));
         bytes memory code = _deployedNativo.code;
         address payable targetAddr = payable(address(0x000000006789fDb6Fc1F34aC4ad25dD9EF7031Ef));
         vm.etch(targetAddr, code);
