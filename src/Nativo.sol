@@ -87,9 +87,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     /// @dev This function is payable and will mint Nativo tokens, using the `to`
     ///      address as the slot position to store the balance.
     function depositTo(address to) external payable {
-        // _mint(to, msg.value);
         /// @solidity memory-safe-assembly
         assembly {
+            // _mint(to, msg.value);
             sstore(to, add(sload(to), callvalue()))
         }
         emit Transfer(address(0), to, msg.value);
@@ -98,25 +98,25 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     /// @notice Withdraw native currency burning `amount` of Nativo tokens
     /// @param amount The amount of Nativo tokens to burn
     function withdraw(uint256 amount) public {
-        // _burn(msg.sender, amount);
+        uint256 _balance;
+        assembly {
+            _balance := sload(caller())
+        }
+        if (_balance < amount) revert InsufficientBalance();
+
+        bool success;
+
         /// @solidity memory-safe-assembly
         assembly {
-            let _balance := sload(caller())
-            if lt(_balance, amount) {
-                // revert error, 0xf4d678b8 = InsufficientBalance()
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            // _burn(msg.sender, amount);
             sstore(caller(), sub(_balance, amount))
 
             // Transfer the ETH and store if it succeeded or not.
-            let success := call(gas(), caller(), amount, 0, 0, 0, 0)
-            if iszero(success) {
-                // revert error, 0x750b219c = WithdrawFailed()
-                mstore(0x00, 0x750b219c)
-                revert(0x1c, 0x04)
-            }
+            success := call(gas(), caller(), amount, 0, 0, 0, 0)
         }
+
+        if (!success) revert WithdrawFailed();
+
         // now burn event
         emit Transfer(msg.sender, address(0), amount);
     }
@@ -130,36 +130,31 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     /// @param to The address to send the native currency
     /// @param amount The amount of Nativo tokens to burn
     function withdrawTo(address to, uint256 amount) public {
+        if (to == address(0)) revert AddressZero();
+
+        uint256 _balance;
+        /// @dev lest load user balance
+        assembly {
+            _balance := sload(caller())
+        }
+
+        /// @dev check if user has enough balance
+        if (_balance < amount) revert InsufficientBalance();
+
         /// @solidity memory-safe-assembly
         assembly {
-            // if (to == address(0)) revert AddressZero();
-            if iszero(to) {
-                // revert error, 0x9fabe1c1 = AddressZero()
-                mstore(0x00, 0x9fabe1c1)
-                revert(0x1c, 0x04)
-            }
-
-            // the following code is the same as _burn(msg.sender, amount);
-
-            // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
-            let _balance := sload(caller())
-            if lt(_balance, amount) {
-                // revert error, 0xf4d678b8 = InsufficientBalance()
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
-
+            // _burn(msg.sender, amount);
             // not risk of underflow because of the previous check
             sstore(caller(), sub(_balance, amount))
-
-            // Transfer the ETH and store if it succeeded or not.
-            let success := call(gas(), to, amount, 0, 0, 0, 0)
-            if iszero(success) {
-                // revert error, 0x750b219c = WithdrawFailed()
-                mstore(0x00, 0x750b219c)
-                revert(0x1c, 0x04)
-            }
         }
+
+        bool success;
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Transfer the ETH and store if it succeeded or not.
+            success := call(gas(), to, amount, 0, 0, 0, 0)
+        }
+        if (!success) revert WithdrawFailed();
 
         // msg.sender is transfering Nativo to `to` address
         emit Transfer(msg.sender, to, amount);
@@ -174,40 +169,30 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     function withdrawFromTo(address from, address to, uint256 amount) public {
-        /// @solidity memory-safe-assembly
-        assembly {
-            // if (to == address(0)) revert AddressZero();
-            if iszero(to) {
-                // revert error, 0x9fabe1c1 = AddressZero()
-                mstore(0x00, 0x9fabe1c1)
-                revert(0x1c, 0x04)
-            }
-        }
+        if (to == address(0)) revert AddressZero();
 
         // @dev decrease allowance (if not have unlimited allowance)
         uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
 
+        uint256 _balance;
         /// @solidity memory-safe-assembly
         assembly {
-            // if (amount > balanceOf(msg.sender)) revert InsufficientBalance();
-            let _balance := sload(from)
-            if lt(_balance, amount) {
-                // revert error, 0xf4d678b8 = InsufficientBalance()
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            _balance := sload(from)
+        }
 
+        if (amount > _balance) revert InsufficientBalance();
+
+        bool success;
+        /// @solidity memory-safe-assembly
+        assembly {
+            // not risk of underflow because of the previous check
             sstore(from, sub(_balance, amount))
 
             // Transfer the ETH and store if it succeeded or not.
-            let success := call(gas(), to, amount, 0, 0, 0, 0)
-            if iszero(success) {
-                // revert error, 0x750b219c = WithdrawFailed()
-                mstore(0x00, 0x750b219c)
-                revert(0x1c, 0x04)
-            }
+            success := call(gas(), to, amount, 0, 0, 0, 0)
         }
+        if (!success) revert WithdrawFailed();
 
         // transfer event from `from` to `to`
         emit Transfer(from, to, amount);
@@ -238,7 +223,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @dev totalSupply is the total amount of Native currency in contract (exampl ETH) plus
+     * @dev totalSupply is the total amount of Native currency in contract (example ETH) plus
      *     the amount of Nativo tokens minted in flash loans, minus one, because the
      *     flash loan will always be (1+flashMinted), please review the ERC3156.sol
      */

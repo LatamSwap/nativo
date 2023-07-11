@@ -92,16 +92,16 @@ abstract contract ERC20 {
     }
 
     function transfer(address to, uint256 amount) external returns (bool) {
+        uint256 _balance;
+
         /// @solidity memory-safe-assembly
         assembly {
-            // require(balanceOf(msg.sender) >= amount, custom error InsufficientBalance()))
-            let _balance := sload(caller())
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            _balance := sload(caller())
+        }
+        if (_balance < amount) revert InsufficientBalance();
 
+        /// @solidity memory-safe-assembly
+        assembly {
             // cant underflow due previous check
             // unchecked { balanceOf[msg.sender] -= amount; }
             sstore(caller(), sub(_balance, amount))
@@ -209,15 +209,18 @@ abstract contract ERC20 {
     }
 
     function _burn(address from, uint256 amount) internal {
+        uint256 _balance;
+        /// @solidity memory-safe-assembly
+        assembly {
+            _balance := sload(from)
+        }
+
+        if (_balance < amount) revert InsufficientBalance();
+
         /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[from] -= amount;
-            let _balance := sload(from)
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            // cant underflow due previous checks
             sstore(from, sub(_balance, amount))
         }
 
@@ -242,15 +245,16 @@ abstract contract ERC20 {
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
+        uint256 _balance;
         /// @solidity memory-safe-assembly
         assembly {
-            // require(balanceOf(from) >= amount, custom error InsufficientBalance()))
-            let _balance := sload(from)
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            _balance := sload(from)
+        }
+
+        if (_balance < amount) revert InsufficientBalance();
+
+        assembly {
+            // cant underflow due previous check
             // balanceOf[from] -= amount;
             sstore(from, sub(_balance, amount))
 

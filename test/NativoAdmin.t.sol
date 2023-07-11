@@ -41,6 +41,19 @@ contract NativoAdminTest is Test {
         assertEq(randomToken.balanceOf(nativo.treasury()), 11 ether);
     }
 
+    function testRecoverERC20Nativo(address toRecover) external {
+        vm.assume(toRecover != address(0) && toRecover != address(0xdead));
+        nativo.deposit{value: 0.5 ether}();
+        nativo.transfer(toRecover, 0.5 ether);
+
+        vm.prank(deployer);
+        vm.expectRevert("Invalid account");
+        nativo.recoverNativo(toRecover);
+
+        assertEq(nativo.balanceOf(nativo.treasury()), 0);
+        assertEq(nativo.balanceOf(toRecover), 0.5 ether);
+    }
+
     function testRecoverERC20Nativo() external {
         nativo.deposit{value: 0.5 ether}();
         nativo.transfer(address(0), 0.5 ether);
