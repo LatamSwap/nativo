@@ -20,13 +20,16 @@ Object.keys(data.nativo).forEach(methodName => {
     const gasWeth = data.weth[methodName];
     const gasNativo = data.nativo[methodName];
     let delta =  gasNativo - gasWeth;
-    const perc =  Math.floor(((gasWeth-gasNativo) / gasWeth) * 100 * 100) / 100;
+    let perc =  Math.floor(((gasWeth-gasNativo) / gasWeth) * 100 * 100) / 100;
 
     if(delta>0) {
         delta = `<span style="color:red">${delta}</span>`
+        perc = `<span style="color:red">${perc}</span>`
     }else {
         delta = `<span style="color:green">${delta}</span>`
+        perc = `<span style="color:green">${perc}</span>`
     }
+    
     output += `\n| ${methodName} | ${gasWeth} | ${gasNativo} | ${delta} | ${perc}% |` ;
 })
 /*
