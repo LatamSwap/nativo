@@ -106,7 +106,7 @@ contract ERC3156Test is Test {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         nativo.deposit{value: 10_000}();
 
-        vm.expectRevert("ERC3156: reentrancy not allowed");
+        vm.expectRevert(abi.encodeWithSignature("ERC3156NonReentrant()"));
         nativo.flashLoan(
             receiver,
             address(nativo),
