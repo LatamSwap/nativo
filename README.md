@@ -22,6 +22,29 @@
 
 ---
 
+# Gas Benchmark
+
+| method           | WETH9   | Nativo   | delta  | percent cheaper |
+|------------------|---------|----------|--------|-----------------|
+| approve() infinity | 25122 | 25075 | <span style="color:green">-47</span> | <span style="color:green">0.18</span>% |
+| approve() | 25116 | 25069 | <span style="color:green">-47</span> | <span style="color:green">0.18</span>% |
+| balanceOf() | 3177 | 3446 | <span style="color:red">269</span> | <span style="color:red">-8.47</span>% |
+| decimals() | 7562 | 5512 | <span style="color:green">-2050</span> | <span style="color:green">27.1</span>% |
+| deposit() | 35797 | 36618 | <span style="color:red">821</span> | <span style="color:red">-2.3</span>% |
+| depositTo() | 71403 | 46549 | <span style="color:green">-24854</span> | <span style="color:green">34.8</span>% |
+| totalSupply() | 934 | 3004 | <span style="color:red">2070</span> | <span style="color:red">-221.63</span>% |
+| transfer() | 25852 | 25721 | <span style="color:green">-131</span> | <span style="color:green">0.5</span>% |
+| transferFrom() infinity | 26166 | 25852 | <span style="color:green">-314</span> | <span style="color:green">1.2</span>% |
+| transferFrom() | 26889 | 26162 | <span style="color:green">-727</span> | <span style="color:green">2.7</span>% |
+| withdraw() | 9817 | 9934 | <span style="color:red">117</span> | <span style="color:red">-1.2</span>% |
+| withdrawAll() | 10921 | 10299 | <span style="color:green">-622</span> | <span style="color:green">5.69</span>% |
+| withdrawAllFromTo() | 75076 | 40926 | <span style="color:green">-34150</span> | <span style="color:green">45.48</span>% |
+| withdrawAllTo() | 49014 | 40717 | <span style="color:green">-8297</span> | <span style="color:green">16.92</span>% |
+| withdrawFromTo() | 74178 | 40907 | <span style="color:green">-33271</span> | <span style="color:green">44.85</span>% |
+| withdrawTo() | 47984 | 40045 | <span style="color:green">-7939</span> | <span style="color:green">16.54</span>% |
+
+---
+
 # Deployments
 
 ## Patex Sepolia
