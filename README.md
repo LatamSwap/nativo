@@ -47,15 +47,17 @@
 
 # Deployments
 
-## Patex Sepolia
 
-Contract Address: [`0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d`](https://testnet.patexscan.io/address/0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d/contracts)
+## Mantle Testnet
+
+[`0x556Ba000FdF0553b79aF7815e98961Ddf4eCf84F`](https://explorer.testnet.mantle.xyz/address/0x556Ba000FdF0553b79aF7815e98961Ddf4eCf84F)
 
 ## XDAI testnet Chain
 
 [`0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d`](https://blockscout.chiadochain.net/address/0x2A955Cd173b851bac5Be79BdC8Cbc5D5a30e1d8d)
 
 ## Scroll Alpha Testnet
+
 [`0x2Ca416EA2F4bb26ff448823EB38e533b60875C81`](https://blockscout.scroll.io/address/0x2Ca416EA2F4bb26ff448823EB38e533b60875C81/contracts#address-tabs)
 
 ## Avax fuji
