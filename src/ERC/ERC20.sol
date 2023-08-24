@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.19;
 
-import {StrHelper} from "../StrHelper.sol";
-
 abstract contract ERC20 {
+    // Balances of users will be stored onfrom 0x000000000000
+    // reserve slots for balance storage
+    uint256[1 << 160] private __gapBalances;
+
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -23,18 +25,14 @@ abstract contract ERC20 {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    bytes32 immutable _name;
-    bytes32 immutable _symbol;
+    string public name;
+    string public symbol;
 
     uint8 public constant decimals = 18;
 
     /*//////////////////////////////////////////////////////////////
                               ERC20 STORAGE
     //////////////////////////////////////////////////////////////*/
-
-    // Balances of users will be stored onfrom 0x000000000000
-    // reserve slots for balance storage
-    uint256[1 << 160] private __gapBalances;
 
     mapping(address user => mapping(address spender => uint256 amount)) public allowance;
 
@@ -52,9 +50,9 @@ abstract contract ERC20 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(bytes32 name_, bytes32 symbol_) {
-        _name = name_;
-        _symbol = symbol_;
+    constructor(string memory name_, string memory symbol_) {
+        name = name_;
+        symbol = symbol_;
 
         INITIAL_CHAIN_ID = block.chainid;
         INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
@@ -63,16 +61,6 @@ abstract contract ERC20 {
     /*//////////////////////////////////////////////////////////////
                                ERC20 LOGIC
     //////////////////////////////////////////////////////////////*/
-
-    /// @dev Returns the name of the token.
-    function name() external view returns (string memory) {
-        return StrHelper.bytes32ToString(_name);
-    }
-
-    /// @dev Returns the symbol of the token.
-    function symbol() external view returns (string memory) {
-        return StrHelper.bytes32ToString(_symbol);
-    }
 
     function totalSupply() external view virtual returns (uint256);
 
@@ -182,7 +170,7 @@ abstract contract ERC20 {
         return keccak256(
             abi.encode(
                 keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(StrHelper.bytes32ToString(_name))),
+                keccak256(bytes(name)),
                 keccak256("1"),
                 block.chainid,
                 address(this)

@@ -57,7 +57,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(bytes32 name_, bytes32 symbol_, address _treasury, address _manager) ERC20(name_, symbol_) {
+    constructor(string memory name_, string memory symbol_, address _treasury, address _manager) ERC20(name_, symbol_) {
         init_ERC3156();
         assembly {
             // store address of treasury
