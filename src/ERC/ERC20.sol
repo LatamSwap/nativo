@@ -1,10 +1,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.20;
 
+import {StrHelper} from "../StrHelper.sol";
+
 abstract contract ERC20 {
     // Balances of users will be stored onfrom 0x000000000000
     // reserve slots for balance storage
     uint256[1 << 160] private __gapBalances;
+
+    bytes32 constant internal _PERMIT_SIGN = keccak256(
+        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+    );
+    bytes32 constant internal _EIP712_DOMAIN = keccak256(
+        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+    );
 
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
@@ -12,6 +21,8 @@ abstract contract ERC20 {
 
     /// @dev Insufficient balance. 4bytes sig 0xf4d678b8
     error InsufficientBalance();
+    error PermitDeadlineExpired();
+    error InvalidSigner();
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -25,8 +36,8 @@ abstract contract ERC20 {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    string public name;
-    string public symbol;
+    bytes32 private immutable _name;
+    bytes32 private immutable _symbol;
 
     uint8 public constant decimals = 18;
 
@@ -44,23 +55,37 @@ abstract contract ERC20 {
 
     bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;
 
+    bytes32 internal immutable _NAME_KECCAK;
+    bytes32 internal constant _VERSION_KECCAK = keccak256("1");
+
     mapping(address user => uint256 nonce) public nonces;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory name_, string memory symbol_) {
-        name = name_;
-        symbol = symbol_;
+    constructor(bytes32 name_, bytes32 symbol_) {
+        _name = name_;
+        _symbol = symbol_;
 
         INITIAL_CHAIN_ID = block.chainid;
+        _NAME_KECCAK = keccak256(bytes(StrHelper.bytes32ToString(name_)));
         INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
     }
 
     /*//////////////////////////////////////////////////////////////
                                ERC20 LOGIC
     //////////////////////////////////////////////////////////////*/
+
+    /// @dev Returns the name of the token.
+    function name() external view returns (string memory) {
+        return StrHelper.bytes32ToString(_name);
+    }
+
+    /// @dev Returns the symbol of the token.
+    function symbol() external view returns (string memory) {
+        return StrHelper.bytes32ToString(_symbol);
+    }
 
     function totalSupply() external view virtual returns (uint256);
 
@@ -125,7 +150,7 @@ abstract contract ERC20 {
     function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
         external
     {
-        require(deadline >= block.timestamp, "PERMIT_DEADLINE_EXPIRED");
+        if (deadline < block.timestamp) revert PermitDeadlineExpired();
 
         // Unchecked because the only math done is incrementing
         // the owner's nonce which cannot realistically overflow.
@@ -137,9 +162,7 @@ abstract contract ERC20 {
                         DOMAIN_SEPARATOR(),
                         keccak256(
                             abi.encode(
-                                keccak256(
-                                    "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-                                ),
+                                _PERMIT_SIGN,
                                 owner,
                                 spender,
                                 value,
@@ -154,7 +177,7 @@ abstract contract ERC20 {
                 s
             );
 
-            require(recoveredAddress != address(0) && recoveredAddress == owner, "INVALID_SIGNER");
+            if(recoveredAddress == address(0) || recoveredAddress != owner) revert InvalidSigner();
 
             allowance[recoveredAddress][spender] = value;
         }
@@ -169,9 +192,9 @@ abstract contract ERC20 {
     function computeDomainSeparator() internal view returns (bytes32) {
         return keccak256(
             abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(name)),
-                keccak256("1"),
+                _EIP712_DOMAIN,
+                _NAME_KECCAK,
+                _VERSION_KECCAK,
                 block.chainid,
                 address(this)
             )

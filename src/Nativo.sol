@@ -21,6 +21,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     error WithdrawFailed();
     error AddressZero();
+    error NotImplemented();
+    error NotManager();
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -59,7 +61,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory name_, string memory symbol_, address _treasury, address _manager)
+    constructor(bytes32 name_, bytes32 symbol_, address _treasury, address _manager)
         ERC20(name_, symbol_)
     {
         init_ERC3156();
@@ -136,8 +138,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     function withdrawTo(address to, uint256 amount) public {
         if (to == address(0)) revert AddressZero();
 
+        /// @dev load user balance
         uint256 _balance;
-        /// @dev lest load user balance
         assembly {
             _balance := sload(caller())
         }
@@ -219,7 +221,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     fallback() external payable {
-        revert("!implemented");
+        revert NotImplemented();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -254,14 +256,15 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function recoverERC20(address token, uint256 amount) public {
-        require(msg.sender == manager(), "!manager");
+        if (msg.sender != manager()) revert NotManager();
+
         SafeTransferLib.safeTransfer(token, treasury(), amount);
     }
 
     /// @notice Recover nativo ERC20 token sent to dead address: address(0) or address(0xdead)
     /// @dev Nativo ERC20 token sent to dead address are consider donations and shoul be claimable by the protocol
     function recoverNativo() external {
-        require(msg.sender == manager(), "!manager");
+        if (msg.sender != manager()) revert NotManager();
 
         // dead address or zero address are consider donation address
         _recoverNativo(address(0));
@@ -293,8 +296,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     //////////////////////////////////////////////////////////////*/
 
     function setManager(address account) external {
-        require(msg.sender == manager(), "!manager");
-        require(account != address(0), "!address(0)");
+        if (msg.sender != manager()) revert NotManager();
+        if (account == address(0)) revert AddressZero();
 
         assembly {
             sstore(_MANAGER_SLOT, account)
@@ -303,8 +306,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     function setTreasury(address newTreasury) external {
-        require(msg.sender == manager(), "!manager");
-        require(newTreasury != address(0), "!address(0)");
+        if (msg.sender != manager()) revert NotManager();
+        if (newTreasury == address(0)) revert AddressZero();
+
         address oldTreasury;
         assembly {
             oldTreasury := sload(_TREASURY_SLOT)

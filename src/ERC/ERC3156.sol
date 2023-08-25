@@ -27,10 +27,12 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
 
     /// @dev Reentrancy guard error.
     error ERC3156NonReentrant();
+    error ERC3156AlreadyInitialized();
+    error ERC3156MinAmount10000wei();
 
     function init_ERC3156() internal {
-        assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
-        require(_flashMinted() == 0, "ERC3156: already initialized");
+        // @dev manually cheched: assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
+        if(_flashMinted() > 0) revert ERC3156AlreadyInitialized();
         assembly {
             // @dev flashMinted is used to keep track of the amount of tokens minted in a flash loan
             //      is starting in 1 to save gas
@@ -113,7 +115,7 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
     {
         uint256 flashMinted = _flashMinted();
         if (flashMinted > 1) revert ERC3156NonReentrant();
-        if (amount < 10000) revert("ERC3156: min amount is 1000 wei");
+        if (amount < 10000) revert ERC3156MinAmount10000wei();
 
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);
