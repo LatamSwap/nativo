@@ -19,7 +19,7 @@ contract NativoTest is Test {
         nativo = new Nativo("Wrapped Nativo crypto", "wANY", manager, manager);
     }
 
-    function invariantMetadata() public {
+    function testMetadata() public {
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "wANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");

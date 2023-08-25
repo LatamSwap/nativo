@@ -20,7 +20,7 @@ contract ERC1363Test is Test {
         nft = new NFTtoken(address(nativo), false);
     }
 
-    function invariantMetadata() public {
+    function testMetadata() public {
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "nANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");

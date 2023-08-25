@@ -21,11 +21,7 @@ contract NativoGasTest is Test, GasSnapshot {
         // name and symbol depend on the blockchain we are deploying
 
         // address treasury = 0x00000000fFFffDB6Fc1F34ac4aD25dd9eF7031eF;
-        address _deployedNativo = address(new Nativo("Nativo Wrapped Ether", "WETH", address(this), address(this)));
-        bytes memory code = _deployedNativo.code;
-        address payable targetAddr = payable(address(0x000000006789fDb6Fc1F34aC4ad25dD9EF7031Ef));
-        vm.etch(targetAddr, code);
-        nativo = Nativo(targetAddr);
+        nativo = new Nativo("Nativo Wrapped Ether", "WETH", address(this), address(this));
 
         // main net WETH address
         vm.etch(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2, address(DeployWeth.deploy()).code);
@@ -42,8 +38,8 @@ contract NativoGasTest is Test, GasSnapshot {
             vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
         }
         */
-        _slot = bytes32(uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
-        vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
+        //_slot = bytes32(uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
+        //vm.store(address(nativo), _slot, vm.load(_deployedNativo, _slot));
 
         vm.store(address(weth), bytes32(0), bytes32(0x577261707065642045746865720000000000000000000000000000000000001a));
         vm.store(

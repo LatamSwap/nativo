@@ -22,7 +22,7 @@ contract ERC3156Test is Test {
         nativo.setTreasury(treasury);
     }
 
-    function invariantMetadata() public {
+    function testMetadata() public {
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "nANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");

@@ -6,7 +6,7 @@
 /// a way to wrap the native cryptocurrency of any supported EVM network into
 /// an ERC20 token, thus enabling more sophisticated interaction with smart
 /// contracts and DApps on various blockchains.
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import {ERC20} from "./ERC/ERC20.sol";
 import {ERC1363} from "./ERC/ERC1363.sol";
@@ -57,7 +57,9 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory name_, string memory symbol_, address _treasury, address _manager) ERC20(name_, symbol_) {
+    constructor(string memory name_, string memory symbol_, address _treasury, address _manager)
+        ERC20(name_, symbol_)
+    {
         init_ERC3156();
         assembly {
             // store address of treasury
@@ -253,34 +255,32 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     /// @notice Recover nativo ERC20 token sent to dead address: address(0) or address(0xdead)
     /// @dev Nativo ERC20 token sent to dead address are consider donations and shoul be claimable by the protocol
-    /// @param account The address to recover nativo ERC20 token, can only be address(0) or address(0xdead)
-    function recoverNativo(address account) external {
+    function recoverNativo() external {
         require(msg.sender == manager(), "!manager");
 
         // dead address or zero address are consider donation address
-        require(account == address(0) || account == address(0xdead), "Invalid account");
+        _recoverNativo(address(0));
+        _recoverNativo(address(0xdead));
+    }
 
-        uint256 recoverAmount;
-        address _treasury = treasury();
-        /// @solidity memory-safe-assembly
-        assembly {
-            recoverAmount := sload(account)
-        }
-
-        require(recoverAmount > 0, "No nativo to recover");
+    function _recoverNativo(address recoverAccount) internal {
+        uint256 recoverAmount = balanceOf(recoverAccount);
+        // @dev no nativo to recover
+        if (recoverAmount == 0) return;
 
         /// @solidity memory-safe-assembly
         assembly {
-            // set to zero the balance of account
-            sstore(account, 0)
+            let _treasury := sload(_TREASURY_SLOT)
+            // set to zero the balance of recoverAccount
+            sstore(recoverAccount, 0)
 
             // add to treasury the amount of nativo to recover
             let treasuryBalance := sload(_treasury)
             sstore(_treasury, add(treasuryBalance, recoverAmount))
         }
 
-        // tell that we recover some nativo from account
-        emit RecoverNativo(account, recoverAmount);
+        // tell that we recover some nativo from recoverAccount
+        emit RecoverNativo(recoverAccount, recoverAmount);
     }
 
     /*//////////////////////////////////////////////////////////////

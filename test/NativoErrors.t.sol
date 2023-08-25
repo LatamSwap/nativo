@@ -86,11 +86,7 @@ contract NativoErrorsTest is Test {
         vm.expectRevert("!manager");
         nativo.recoverERC20(makeAddr("token"), 1 ether);
         vm.expectRevert("!manager");
-        nativo.recoverNativo(makeAddr("token"));
-
-        vm.prank(manager);
-        vm.expectRevert("Invalid account");
-        nativo.recoverNativo(makeAddr("token"));
+        nativo.recoverNativo();
     }
 
     function testManagerSetter() public {
