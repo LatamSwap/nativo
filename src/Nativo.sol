@@ -178,8 +178,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         if (to == address(0)) revert AddressZero();
 
         // @dev decrease allowance (if not have unlimited allowance)
-        uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
-        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
+        uint256 allowed = allowance()[from][msg.sender]; // Saves gas for limited approvals.
+        if (allowed != type(uint256).max) allowance()[from][msg.sender] = allowed - amount;
 
         uint256 _balance;
         /// @solidity memory-safe-assembly
@@ -255,7 +255,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                        PROTOCOL RECOVER LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function recoverERC20(address token, uint256 amount) public {
+    function recoverERC20(address token, uint256 amount) external {
         if (msg.sender != manager()) revert NotManager();
 
         SafeTransferLib.safeTransfer(token, treasury(), amount);
