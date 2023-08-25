@@ -8,12 +8,10 @@ abstract contract ERC20 {
     // reserve slots for balance storage
     // uint256[1 << 160] private __gapBalances;
 
-    bytes32 constant private _PERMIT_SIGN = keccak256(
-        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-    );
-    bytes32 constant private _EIP712_DOMAIN = keccak256(
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-    );
+    bytes32 private constant _PERMIT_SIGN =
+        keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 private constant _EIP712_DOMAIN =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
@@ -187,16 +185,7 @@ abstract contract ERC20 {
                     abi.encodePacked(
                         "\x19\x01",
                         DOMAIN_SEPARATOR(),
-                        keccak256(
-                            abi.encode(
-                                _PERMIT_SIGN,
-                                owner,
-                                spender,
-                                value,
-                                nonces()[owner]++,
-                                deadline
-                            )
-                        )
+                        keccak256(abi.encode(_PERMIT_SIGN, owner, spender, value, nonces()[owner]++, deadline))
                     )
                 ),
                 v,
@@ -204,7 +193,7 @@ abstract contract ERC20 {
                 s
             );
 
-            if(recoveredAddress == address(0) || recoveredAddress != owner) revert InvalidSigner();
+            if (recoveredAddress == address(0) || recoveredAddress != owner) revert InvalidSigner();
 
             allowance()[recoveredAddress][spender] = value;
         }
@@ -217,15 +206,7 @@ abstract contract ERC20 {
     }
 
     function computeDomainSeparator() internal view returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                _EIP712_DOMAIN,
-                _NAME_KECCAK,
-                _VERSION_KECCAK,
-                block.chainid,
-                address(this)
-            )
-        );
+        return keccak256(abi.encode(_EIP712_DOMAIN, _NAME_KECCAK, _VERSION_KECCAK, block.chainid, address(this)));
     }
 
     /*//////////////////////////////////////////////////////////////

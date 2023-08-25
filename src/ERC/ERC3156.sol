@@ -32,7 +32,7 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
 
     function init_ERC3156() internal {
         // @dev manually cheched: assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
-        if(_flashMinted() > 0) revert ERC3156AlreadyInitialized();
+        if (_flashMinted() > 0) revert ERC3156AlreadyInitialized();
         assembly {
             // @dev flashMinted is used to keep track of the amount of tokens minted in a flash loan
             //      is starting in 1 to save gas
