@@ -12,6 +12,8 @@ import {ERC20} from "./ERC/ERC20.sol";
 import {ERC1363} from "./ERC/ERC1363.sol";
 import {ERC3156} from "./ERC/ERC3156.sol";
 
+import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+
 contract Nativo is ERC20, ERC1363, ERC3156 {
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
@@ -240,8 +242,11 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                ERC3156 LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function _flashFeeReceiver() internal view override returns (address) {
-        return treasury();
+    function _flashFeeReceiver() internal view override returns (address treasury_) {
+        /// @solidity memory-safe-assembly
+        assembly {
+            treasury_ := sload(_TREASURY_SLOT)
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -250,7 +255,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     function recoverERC20(address token, uint256 amount) public {
         require(msg.sender == manager(), "!manager");
-        ERC20(token).transfer(treasury(), amount);
+        SafeTransferLib.safeTransfer(token, treasury(), amount);
     }
 
     /// @notice Recover nativo ERC20 token sent to dead address: address(0) or address(0xdead)
