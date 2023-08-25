@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import {StrHelper} from "../StrHelper.sol";
-import {AllowanceMapping, Allowance} from "../MappingType.sol";
 
 abstract contract ERC20 {
     // Balances of users will be stored onfrom 0x000000000000
