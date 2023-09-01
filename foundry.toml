@@ -9,9 +9,7 @@ fs_permissions = [{ access = "read-write", path = "./" }]
 solc = "0.8.20"
 optimize=true
 optimize_runs=20000
-
-#ffi=true
-#fs_permissions = [{ access = "read-write", path = ".forge-snapshots/"}]
+#viaIR = true
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
@@ -21,5 +19,3 @@ RSK_RPC_URL="https://public-node.testnet.rsk.co"
 ## chain id 43113
 ## https://testnet.snowtrace.io/
 
-[profile.optimizor]
-#viaIR = true

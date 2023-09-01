@@ -2,12 +2,22 @@
 pragma solidity ^0.8.4;
 
 interface INativo {
+    error NotImplemented();
+    error NotManager();
     error AddressZero();
     error AllowanceOverflow();
     error AllowanceUnderflow();
+    // ERC3156
     error ERC3156ExceededMaxLoan(uint256 maxLoan);
     error ERC3156InvalidReceiver(address receiver);
     error ERC3156UnsupportedToken(address token);
+    error ERC3156NonReentrant();
+    error ERC3156AlreadyInitialized();
+    error ERC3156MinAmount10000wei();
+    // ERC1363
+    error Spender_onApprovalReceived_rejected();
+    error Receiver_transferReceived_rejected();
+
     error InsufficientAllowance();
     error InsufficientBalance();
     error InvalidPermit();
