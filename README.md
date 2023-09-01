@@ -26,22 +26,22 @@
 
 | method           | WETH9   | Nativo   | delta  | percent cheaper |
 |------------------|---------|----------|--------|-----------------|
-| approve() infinity | 25045 | 25239 | <span style="color:red">194</span> | <span style="color:red">-0.78</span>% |
-| approve() | 25042 | 25236 | <span style="color:red">194</span> | <span style="color:red">-0.78</span>% |
+| approve() infinity | 25045 | 25139 | <span style="color:red">94</span> | <span style="color:red">-0.38</span>% |
+| approve() | 25042 | 25136 | <span style="color:red">94</span> | <span style="color:red">-0.38</span>% |
 | balanceOf() | 3037 | 3037 | <span style="color:green">0</span> | <span style="color:green">0</span>% |
 | decimals() | 7506 | 5337 | <span style="color:green">-2169</span> | <span style="color:green">28.89</span>% |
-| deposit() | 35706 | 35928 | <span style="color:red">222</span> | <span style="color:red">-0.63</span>% |
-| depositTo() | 71178 | 46028 | <span style="color:green">-25150</span> | <span style="color:green">35.33</span>% |
+| deposit() | 35706 | 35947 | <span style="color:red">241</span> | <span style="color:red">-0.68</span>% |
+| depositTo() | 71178 | 46006 | <span style="color:green">-25172</span> | <span style="color:green">35.36</span>% |
 | totalSupply() | 871 | 2927 | <span style="color:red">2056</span> | <span style="color:red">-236.06</span>% |
-| transfer() | 25778 | 25360 | <span style="color:green">-418</span> | <span style="color:green">1.62</span>% |
-| transferFrom() infinity | 25999 | 25878 | <span style="color:green">-121</span> | <span style="color:green">0.46</span>% |
-| transferFrom() | 26722 | 26244 | <span style="color:green">-478</span> | <span style="color:green">1.78</span>% |
-| withdraw() | 9640 | 9708 | <span style="color:red">68</span> | <span style="color:red">-0.71</span>% |
-| withdrawAll() | 10651 | 9798 | <span style="color:green">-853</span> | <span style="color:green">8</span>% |
-| withdrawAllFromTo() | 74746 | 40808 | <span style="color:green">-33938</span> | <span style="color:green">45.4</span>% |
-| withdrawAllTo() | 48809 | 40175 | <span style="color:green">-8634</span> | <span style="color:green">17.68</span>% |
-| withdrawFromTo() | 73889 | 40787 | <span style="color:green">-33102</span> | <span style="color:green">44.79</span>% |
-| withdrawTo() | 47881 | 40108 | <span style="color:green">-7773</span> | <span style="color:green">16.23</span>% |
+| transfer() | 25778 | 25456 | <span style="color:green">-322</span> | <span style="color:green">1.24</span>% |
+| transferFrom() infinity | 25999 | 25973 | <span style="color:green">-26</span> | <span style="color:green">0.1</span>% |
+| transferFrom() | 26722 | 26186 | <span style="color:green">-536</span> | <span style="color:green">2</span>% |
+| withdraw() | 9640 | 9925 | <span style="color:red">285</span> | <span style="color:red">-2.96</span>% |
+| withdrawAll() | 10651 | 10000 | <span style="color:green">-651</span> | <span style="color:green">6.11</span>% |
+| withdrawAllFromTo() | 74746 | 39114 | <span style="color:green">-35632</span> | <span style="color:green">47.67</span>% |
+| withdrawAllTo() | 48809 | 38460 | <span style="color:green">-10349</span> | <span style="color:green">21.2</span>% |
+| withdrawFromTo() | 73889 | 39093 | <span style="color:green">-34796</span> | <span style="color:green">47.09</span>% |
+| withdrawTo() | 47881 | 38408 | <span style="color:green">-9473</span> | <span style="color:green">19.78</span>% |
 ---
 
 # Deployments

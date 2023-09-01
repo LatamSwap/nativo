@@ -22,7 +22,7 @@ interface INativo {
     error InsufficientBalance();
     error InvalidPermit();
     error PermitExpired();
-    error WithdrawFailed();
+    error ETHTransferFailed();
 
     event Approval(address indexed owner, address indexed spender, uint256 amount);
     event RecoverNativo(address indexed account, uint256 amount);

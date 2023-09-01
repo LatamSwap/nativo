@@ -21,6 +21,7 @@ abstract contract ERC20 {
     error InsufficientBalance();
     error PermitDeadlineExpired();
     error InvalidSigner();
+    error InsufficientAllowance();
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -240,8 +241,10 @@ abstract contract ERC20 {
     // idea taken from https://github.com/Philogy/meth-weth/blob/5219af2f4ab6c91f8fac37b2633da35e20345a9e/src/reference/ReferenceMETH.sol
     function _useAllowance(address owner, uint256 amount) internal {
         Value storage currentAllowance = _allowance(owner, msg.sender);
-        
-        // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
-        if (currentAllowance.value != type(uint256).max) currentAllowance.value = currentAllowance.value - amount;
+        if(currentAllowance.value < amount) revert InsufficientAllowance();
+        unchecked {
+            // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
+            if (currentAllowance.value != type(uint256).max) currentAllowance.value = currentAllowance.value - amount;
+        }
     }
 }

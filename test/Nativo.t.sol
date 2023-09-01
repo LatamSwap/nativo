@@ -46,11 +46,11 @@ contract NativoTest is Test {
         assertEq(nativo.balanceOf(address(this)), 1 ether, "Wrong balance of user");
 
         // contract cant receive ether, doesnt have a fallback function
-        vm.expectRevert(Nativo.WithdrawFailed.selector);
+        vm.expectRevert(Nativo.ETHTransferFailed.selector);
         nativo.withdraw(0.5 ether);
 
         // contract cant receive ether, doesnt have a fallback function
-        vm.expectRevert(Nativo.WithdrawFailed.selector);
+        vm.expectRevert(Nativo.ETHTransferFailed.selector);
         nativo.withdrawTo(address(this), 0.5 ether);
 
         vm.expectRevert(Nativo.AddressZero.selector);

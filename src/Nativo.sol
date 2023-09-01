@@ -19,7 +19,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
 
-    error WithdrawFailed();
+    error ETHTransferFailed();
     error AddressZero();
     error NotImplemented();
     error NotManager();
