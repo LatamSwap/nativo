@@ -79,129 +79,47 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     /// @dev This function is payable and will mint Nativo tokens, using the `msg.sender`
     ///      address as the slot position to store the balance.
     function deposit() external payable {
-        // _mint(msg.sender, msg.value);
-        /// @solidity memory-safe-assembly
-        assembly {
-            sstore(caller(), add(sload(caller()), callvalue()))
-        }
-        emit Transfer(address(0), msg.sender, msg.value);
+        _mint(msg.sender, msg.value);
     }
 
     /// @notice Deposit native currency to get Nativo tokens in `to` address
     /// @dev This function is payable and will mint Nativo tokens, using the `to`
     ///      address as the slot position to store the balance.
     function depositTo(address to) external payable {
-        /// @solidity memory-safe-assembly
-        assembly {
-            // _mint(to, msg.value);
-            sstore(to, add(sload(to), callvalue()))
-        }
-        emit Transfer(address(0), to, msg.value);
+        _mint(to, msg.value);
     }
 
     /// @notice Withdraw native currency burning `amount` of Nativo tokens
     /// @param amount The amount of Nativo tokens to burn
     function withdraw(uint256 amount) public {
-        uint256 _balance;
-        assembly {
-            _balance := sload(caller())
-        }
-        if (_balance < amount) revert InsufficientBalance();
-
-        bool success;
-
-        /// @solidity memory-safe-assembly
-        assembly {
-            // _burn(msg.sender, amount);
-            sstore(caller(), sub(_balance, amount))
-
-            // Transfer the ETH and store if it succeeded or not.
-            success := call(gas(), caller(), amount, 0, 0, 0, 0)
-        }
-
-        if (!success) revert WithdrawFailed();
-
-        // now burn event
-        emit Transfer(msg.sender, address(0), amount);
+        _burn(msg.sender, amount);
+        _transferETH(msg.sender, amount);
     }
 
     /// @notice Withdraw all native currency of `msg.sender`,  burning all Nativo tokens owned by `msg.sender`
     function withdrawAll() external {
-        withdraw(balanceOf(msg.sender));
+        withdraw(_balanceOf(msg.sender).value);
     }
 
     /// @notice Withdraw native currency burning `amount` of Nativo tokens and send it to `to` address
     /// @param to The address to send the native currency
     /// @param amount The amount of Nativo tokens to burn
     function withdrawTo(address to, uint256 amount) public {
-        if (to == address(0)) revert AddressZero();
-
-        /// @dev load user balance
-        uint256 _balance;
-        assembly {
-            _balance := sload(caller())
-        }
-
-        /// @dev check if user has enough balance
-        if (_balance < amount) revert InsufficientBalance();
-
-        /// @solidity memory-safe-assembly
-        assembly {
-            // _burn(msg.sender, amount);
-            // not risk of underflow because of the previous check
-            sstore(caller(), sub(_balance, amount))
-        }
-
-        bool success;
-        /// @solidity memory-safe-assembly
-        assembly {
-            // Transfer the ETH and store if it succeeded or not.
-            success := call(gas(), to, amount, 0, 0, 0, 0)
-        }
-        if (!success) revert WithdrawFailed();
-
-        // msg.sender is transfering Nativo to `to` address
-        emit Transfer(msg.sender, to, amount);
-        // now burn event, `to` address is burning Nativo
-        emit Transfer(to, address(0), amount);
+        _burn(msg.sender, amount);
+        _transferETH(to, amount);
     }
 
     /// @notice Withdraw all native currency of `msg.sender`,  burning all Nativo tokens owned by `msg.sender` and send it to `to` address
     /// @param to The address to send the native currency
     function withdrawAllTo(address to) external {
-        withdrawTo(to, balanceOf(msg.sender));
+        withdrawTo(to, _balanceOf(msg.sender).value);
     }
 
     function withdrawFromTo(address from, address to, uint256 amount) public {
-        if (to == address(0)) revert AddressZero();
-
         // @dev decrease allowance (if not have unlimited allowance)
-        uint256 allowed = allowance()[from][msg.sender]; // Saves gas for limited approvals.
-        if (allowed != type(uint256).max) allowance()[from][msg.sender] = allowed - amount;
-
-        uint256 _balance;
-        /// @solidity memory-safe-assembly
-        assembly {
-            _balance := sload(from)
-        }
-
-        if (amount > _balance) revert InsufficientBalance();
-
-        bool success;
-        /// @solidity memory-safe-assembly
-        assembly {
-            // not risk of underflow because of the previous check
-            sstore(from, sub(_balance, amount))
-
-            // Transfer the ETH and store if it succeeded or not.
-            success := call(gas(), to, amount, 0, 0, 0, 0)
-        }
-        if (!success) revert WithdrawFailed();
-
-        // transfer event from `from` to `to`
-        emit Transfer(from, to, amount);
-        // now burn event, transfer from `to` to address(0)
-        emit Transfer(to, address(0), amount);
+        _useAllowance(from, amount);
+        _burn(from, amount);
+        _transferETH(to, amount);
     }
 
     function withdrawAllFromTo(address from, address to) external {
@@ -209,17 +127,16 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     receive() external payable {
-        // _mint(msg.sender, msg.value);
-        /// @solidity memory-safe-assembly
-        assembly {
-            sstore(caller(), add(sload(caller()), callvalue()))
-        }
-        // now mint event
-        emit Transfer(address(0), msg.sender, msg.value);
+        _mint(msg.sender, msg.value);
     }
 
     fallback() external payable {
         revert NotImplemented();
+    }
+
+    function _transferETH(address to, uint256 amount) internal {
+        if (to == address(0)) revert AddressZero();
+        SafeTransferLib.safeTransferETH(to, amount);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -242,11 +159,8 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                ERC3156 LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function _flashFeeReceiver() internal view override returns (address treasury_) {
-        /// @solidity memory-safe-assembly
-        assembly {
-            treasury_ := sload(_TREASURY_SLOT)
-        }
+    function _flashFeeReceiver() internal view override returns (address) {
+        return treasury();
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -255,7 +169,6 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
 
     function recoverERC20(address token, uint256 amount) external {
         if (msg.sender != manager()) revert NotManager();
-
         SafeTransferLib.safeTransfer(token, treasury(), amount);
     }
 
@@ -265,28 +178,20 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
         if (msg.sender != manager()) revert NotManager();
 
         // dead address or zero address are consider donation address
-        _recoverNativo(address(0));
-        _recoverNativo(address(0xdead));
-    }
+        Value storage _zeroBal = _balanceOf(address(0));
+        Value storage _deadBal = _balanceOf(address(0xdead));
+        Value storage _treasuryBal = _balanceOf(treasury());
 
-    function _recoverNativo(address recoverAccount) internal {
-        uint256 recoverAmount = balanceOf(recoverAccount);
-        // @dev no nativo to recover
-        if (recoverAmount == 0) return;
-
-        /// @solidity memory-safe-assembly
-        assembly {
-            let _treasury := sload(_TREASURY_SLOT)
-            // set to zero the balance of recoverAccount
-            sstore(recoverAccount, 0)
-
-            // add to treasury the amount of nativo to recover
-            let treasuryBalance := sload(_treasury)
-            sstore(_treasury, add(treasuryBalance, recoverAmount))
+        if (_zeroBal.value > 0) {
+            _treasuryBal.value = _treasuryBal.value + _zeroBal.value;
+            _zeroBal.value = 0;
+            emit RecoverNativo(address(0), _zeroBal.value);
         }
-
-        // tell that we recover some nativo from recoverAccount
-        emit RecoverNativo(recoverAccount, recoverAmount);
+        if (_deadBal.value > 0) {
+            _treasuryBal.value = _treasuryBal.value + _deadBal.value;
+            _deadBal.value = 0;
+            emit RecoverNativo(address(0xdead), _deadBal.value);
+        }
     }
 
     /*//////////////////////////////////////////////////////////////

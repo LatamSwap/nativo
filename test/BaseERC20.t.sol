@@ -23,7 +23,7 @@ contract Mock is ERC20("Mock", "MOCK") {
     }
 
     function burnFrom(address from, uint256 amount) public {
-        _spendAllowance(from, msg.sender, amount);
+        _useAllowance(from, amount);
         _burn(from, amount);
     }
 

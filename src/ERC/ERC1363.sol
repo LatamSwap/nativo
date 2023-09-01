@@ -83,8 +83,8 @@ abstract contract ERC1363 is ERC20 {
     }
 
     function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool) {
-        // @dev _spendAllowance will revert if not has enough allowance
-        _spendAllowance(from, msg.sender, amount);
+        // @dev _useAllowance will revert if not has enough allowance
+        _useAllowance(from, amount);
         // now lets transfer nativo tokens to the `to` address
         _transfer(from, to, amount);
 
