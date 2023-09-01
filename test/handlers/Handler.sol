@@ -38,7 +38,11 @@ contract Handler is CommonBase, StdCheats, StdUtils {
 
     modifier createActor() {
         currentActor = msg.sender;
-        _actors.add(msg.sender);
+        if (msg.sender == address(0)) {
+            _actors.add(makeAddr("address0"));
+        } else {
+            _actors.add(msg.sender);
+        }
         _;
     }
 

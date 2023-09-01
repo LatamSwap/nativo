@@ -16,7 +16,7 @@ contract NativoErrorsTest is Test {
 
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY", manager, manager);
     }
 
     function testWithdraw() public {
@@ -83,29 +83,25 @@ contract NativoErrorsTest is Test {
     }
 
     function testManagerFunctions() public {
-        vm.expectRevert("!manager");
+        vm.expectRevert(Nativo.NotManager.selector);
         nativo.recoverERC20(makeAddr("token"), 1 ether);
-        vm.expectRevert("!manager");
-        nativo.recoverNativo(makeAddr("token"));
-
-        vm.prank(manager);
-        vm.expectRevert("Invalid account");
-        nativo.recoverNativo(makeAddr("token"));
+        vm.expectRevert(Nativo.NotManager.selector);
+        nativo.recoverNativo();
     }
 
     function testManagerSetter() public {
-        vm.expectRevert("!manager");
+        vm.expectRevert(Nativo.NotManager.selector);
         nativo.setManager(address(0));
 
-        vm.expectRevert("!manager");
+        vm.expectRevert(Nativo.NotManager.selector);
         nativo.setTreasury(address(0));
 
         vm.prank(manager);
-        vm.expectRevert("!address(0)");
+        vm.expectRevert(Nativo.AddressZero.selector);
         nativo.setManager(address(0));
 
         vm.prank(manager);
-        vm.expectRevert("!address(0)");
+        vm.expectRevert(Nativo.AddressZero.selector);
         nativo.setTreasury(address(0));
     }
 

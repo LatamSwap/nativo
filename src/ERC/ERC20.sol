@@ -1,15 +1,26 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.19;
+pragma solidity ^0.8.20;
 
 import {StrHelper} from "../StrHelper.sol";
 
 abstract contract ERC20 {
+    // Balances of users will be stored onfrom 0x000000000000
+    // reserve slots for balance storage
+    // uint256[1 << 160] private __gapBalances;
+
+    bytes32 private constant _PERMIT_SIGN =
+        keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 private constant _EIP712_DOMAIN =
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
+
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
 
     /// @dev Insufficient balance. 4bytes sig 0xf4d678b8
     error InsufficientBalance();
+    error PermitDeadlineExpired();
+    error InvalidSigner();
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -23,8 +34,8 @@ abstract contract ERC20 {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    bytes32 immutable _name;
-    bytes32 immutable _symbol;
+    bytes32 private immutable _name;
+    bytes32 private immutable _symbol;
 
     uint8 public constant decimals = 18;
 
@@ -32,22 +43,27 @@ abstract contract ERC20 {
                               ERC20 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // Balances of users will be stored onfrom 0x000000000000
-    // reserve slots for balance storage
-    uint256[1 << 160] private __gapBalances;
-
-
-    mapping(address user => mapping(address spender => uint256 amount)) public allowance;
+    // @dev this is setted in a _ALLOWANCE_SLOT
+    // uint256 private constant _ALLOWANCE_SLOT = uint256(keccak256(abi.encodePacked("allowance"))) - 1;
+    uint256 private constant _ALLOWANCE_SLOT = 0xc9e888a1026b19c8c0b57c72d63ed1737106aa10034105b980ba117bd0c29fe0;
+    // mapping(address user => mapping(address spender => uint256 amount)) public allowance;
 
     /*//////////////////////////////////////////////////////////////
                             EIP-2612 STORAGE
     //////////////////////////////////////////////////////////////*/
 
+    // @dev this is setted in a _NONCES_SLOT
+    // uint256 private constant _NONCES_SLOT = uint256(keccak256(abi.encodePacked("nonces"))) - 1;
+    // uint256 private constant _NONCES_SLOT = 0x9c054ed3b44e062c2512c7d33eb0c6bb551261bef4f17ca9367201ef0f7aa000;
+    uint256 private constant _NONCES_SLOT = 0x9c054ed3b44e062c2512c7d33eb0c6bb551261bef4f17ca9367201ef0f7aa000;
+    // mapping(address user => uint256 nonce) public nonces;
+
     uint256 internal immutable INITIAL_CHAIN_ID;
 
     bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;
 
-    mapping(address user => uint256 nonce) public nonces;
+    bytes32 internal immutable _NAME_KECCAK;
+    bytes32 internal constant _VERSION_KECCAK = keccak256("1");
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -58,6 +74,7 @@ abstract contract ERC20 {
         _symbol = symbol_;
 
         INITIAL_CHAIN_ID = block.chainid;
+        _NAME_KECCAK = keccak256(bytes(StrHelper.bytes32ToString(name_)));
         INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
     }
 
@@ -75,6 +92,26 @@ abstract contract ERC20 {
         return StrHelper.bytes32ToString(_symbol);
     }
 
+    function allowance() internal returns (mapping(address => mapping(address => uint256)) storage _allowance) {
+        assembly {
+            _allowance.slot := _ALLOWANCE_SLOT
+        }
+    }
+
+    function allowance(address user, address spender) public returns (uint256 _allowance) {
+        _allowance = allowance()[user][spender];
+    }
+
+    function nonces() internal returns (mapping(address user => uint256 nonce) storage _nonces) {
+        assembly {
+            _nonces.slot := _NONCES_SLOT
+        }
+    }
+
+    function nonces(address user) public returns (uint256 _nonce) {
+        _nonce = nonces()[user];
+    }
+
     function totalSupply() external view virtual returns (uint256);
 
     function balanceOf(address account) public view returns (uint256 _balance) {
@@ -85,7 +122,7 @@ abstract contract ERC20 {
     }
 
     function approve(address spender, uint256 amount) external returns (bool) {
-        allowance[msg.sender][spender] = amount;
+        allowance()[msg.sender][spender] = amount;
 
         emit Approval(msg.sender, spender, amount);
 
@@ -93,16 +130,16 @@ abstract contract ERC20 {
     }
 
     function transfer(address to, uint256 amount) external returns (bool) {
+        uint256 _balance;
+
         /// @solidity memory-safe-assembly
         assembly {
-            // require(balanceOf(msg.sender) >= amount, custom error InsufficientBalance()))
-            let _balance := sload(caller())
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            _balance := sload(caller())
+        }
+        if (_balance < amount) revert InsufficientBalance();
 
+        /// @solidity memory-safe-assembly
+        assembly {
             // cant underflow due previous check
             // unchecked { balanceOf[msg.sender] -= amount; }
             sstore(caller(), sub(_balance, amount))
@@ -121,10 +158,10 @@ abstract contract ERC20 {
     }
 
     function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
+        uint256 allowed = allowance()[from][msg.sender]; // Saves gas for limited approvals.
 
         // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
-        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
+        if (allowed != type(uint256).max) allowance()[from][msg.sender] = allowed - amount;
 
         _transfer(from, to, amount);
 
@@ -138,7 +175,7 @@ abstract contract ERC20 {
     function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
         external
     {
-        require(deadline >= block.timestamp, "PERMIT_DEADLINE_EXPIRED");
+        if (deadline < block.timestamp) revert PermitDeadlineExpired();
 
         // Unchecked because the only math done is incrementing
         // the owner's nonce which cannot realistically overflow.
@@ -148,18 +185,7 @@ abstract contract ERC20 {
                     abi.encodePacked(
                         "\x19\x01",
                         DOMAIN_SEPARATOR(),
-                        keccak256(
-                            abi.encode(
-                                keccak256(
-                                    "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-                                ),
-                                owner,
-                                spender,
-                                value,
-                                nonces[owner]++,
-                                deadline
-                            )
-                        )
+                        keccak256(abi.encode(_PERMIT_SIGN, owner, spender, value, nonces()[owner]++, deadline))
                     )
                 ),
                 v,
@@ -167,9 +193,9 @@ abstract contract ERC20 {
                 s
             );
 
-            require(recoveredAddress != address(0) && recoveredAddress == owner, "INVALID_SIGNER");
+            if (recoveredAddress == address(0) || recoveredAddress != owner) revert InvalidSigner();
 
-            allowance[recoveredAddress][spender] = value;
+            allowance()[recoveredAddress][spender] = value;
         }
 
         emit Approval(owner, spender, value);
@@ -180,15 +206,7 @@ abstract contract ERC20 {
     }
 
     function computeDomainSeparator() internal view returns (bytes32) {
-        return keccak256(
-            abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(StrHelper.bytes32ToString(_name))),
-                keccak256("1"),
-                block.chainid,
-                address(this)
-            )
-        );
+        return keccak256(abi.encode(_EIP712_DOMAIN, _NAME_KECCAK, _VERSION_KECCAK, block.chainid, address(this)));
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -210,15 +228,18 @@ abstract contract ERC20 {
     }
 
     function _burn(address from, uint256 amount) internal {
+        uint256 _balance;
+        /// @solidity memory-safe-assembly
+        assembly {
+            _balance := sload(from)
+        }
+
+        if (_balance < amount) revert InsufficientBalance();
+
         /// @solidity memory-safe-assembly
         assembly {
             // balanceOf[from] -= amount;
-            let _balance := sload(from)
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            // cant underflow due previous checks
             sstore(from, sub(_balance, amount))
         }
 
@@ -230,28 +251,29 @@ abstract contract ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     function _approve(address owner, address spender, uint256 amount) internal {
-        allowance[owner][spender] = amount;
+        allowance()[owner][spender] = amount;
 
         emit Approval(owner, spender, amount);
     }
 
     function _spendAllowance(address owner, address spender, uint256 amount) internal {
-        uint256 allowed = allowance[owner][spender]; // Saves gas for limited approvals.
+        uint256 allowed = allowance()[owner][spender]; // Saves gas for limited approvals.
 
         // if spender try to spend more than allowed it will do an arythmetic underflow revert
-        if (allowed != type(uint256).max) allowance[owner][spender] = allowed - amount;
+        if (allowed != type(uint256).max) allowance()[owner][spender] = allowed - amount;
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
+        uint256 _balance;
         /// @solidity memory-safe-assembly
         assembly {
-            // require(balanceOf(from) >= amount, custom error InsufficientBalance()))
-            let _balance := sload(from)
-            if lt(_balance, amount) {
-                // `InsufficientBalance()`.
-                mstore(0x00, 0xf4d678b8)
-                revert(0x1c, 0x04)
-            }
+            _balance := sload(from)
+        }
+
+        if (_balance < amount) revert InsufficientBalance();
+
+        assembly {
+            // cant underflow due previous check
             // balanceOf[from] -= amount;
             sstore(from, sub(_balance, amount))
 

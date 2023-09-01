@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.19;
+pragma solidity 0.8.20;
 
 import "forge-std/Script.sol";
 
@@ -14,6 +14,6 @@ contract AvaxDeployScript is Script {
     function run() public returns (address nativoAvax) {
         vm.startBroadcast();
         // name and symbol depend on the blockchain we are deploying
-        nativoAvax = address(new Nativo("Nativo Wrapped Avax", "nAVAX"));
+        nativoAvax = address(new Nativo("Nativo Wrapped Avax", "nAVAX", address(this), address(this)));
     }
 }

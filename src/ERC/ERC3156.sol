@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {ERC20} from "./ERC20.sol";
 
@@ -16,24 +16,23 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
     uint256 private constant _FEE_BPS = 100_00; // 100%
     uint256 private constant _FEE = 9; // 0.09%
 
-    /**
-     * @dev The loan token is not valid.
-     */
+    /// @dev The loan token is not valid.
     error ERC3156UnsupportedToken(address token);
 
-    /**
-     * @dev The requested loan exceeds the max loan amount for `token`.
-     */
+    /// @dev The requested loan exceeds the max loan amount for `token`.
     error ERC3156ExceededMaxLoan(uint256 maxLoan);
 
-    /**
-     * @dev The receiver of a flashloan is not a valid {onFlashLoan} implementer.
-     */
+    /// @dev The receiver of a flashloan is not a valid {onFlashLoan} implementer.
     error ERC3156InvalidReceiver(address receiver);
 
+    /// @dev Reentrancy guard error.
+    error ERC3156NonReentrant();
+    error ERC3156AlreadyInitialized();
+    error ERC3156MinAmount10000wei();
+
     function init_ERC3156() internal {
-        assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
-        require(_flashMinted() == 0, "ERC3156: already initialized");
+        // @dev manually cheched: assert(_FLASH_MINTED_SLOT == uint256(keccak256("ERC3156_FLASHMINTED")) - 1);
+        if (_flashMinted() > 0) revert ERC3156AlreadyInitialized();
         assembly {
             // @dev flashMinted is used to keep track of the amount of tokens minted in a flash loan
             //      is starting in 1 to save gas
@@ -115,8 +114,8 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
         returns (bool)
     {
         uint256 flashMinted = _flashMinted();
-        if (flashMinted > 1) revert("ERC3156: reentrancy not allowed");
-        if (amount < 10000) revert("ERC3156: min amount is 1000 wei");
+        if (flashMinted > 1) revert ERC3156NonReentrant();
+        if (amount < 10000) revert ERC3156MinAmount10000wei();
 
         if (token != address(this)) {
             revert ERC3156UnsupportedToken(token);

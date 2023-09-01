@@ -4,7 +4,7 @@ pragma solidity >=0.8.10;
 import "forge-std/Test.sol";
 
 import {Nativo} from "src/Nativo.sol";
-import {ERC20Mock} from "openzeppelin/mocks/ERC20Mock.sol";
+import {ERC20Mock} from "openzeppelin/mocks/token/ERC20Mock.sol";
 
 contract NativoAdminTest is Test {
     Nativo public nativo;
@@ -18,7 +18,7 @@ contract NativoAdminTest is Test {
 
         vm.prank(deployer);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "wANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "wANY", deployer, deployer);
     }
 
     function testRecoverERC20() external {
@@ -48,30 +48,18 @@ contract NativoAdminTest is Test {
         nativo.depositTo{value: 0.5 ether}(address(0xdead));
 
         vm.expectRevert();
-        nativo.recoverNativo(address(0));
+        nativo.recoverNativo();
 
         assertEq(nativo.balanceOf(address(0)), 1 ether);
 
         vm.prank(deployer);
-        nativo.recoverNativo(address(0));
-        assertEq(nativo.balanceOf(nativo.treasury()), 1 ether);
-
-        vm.prank(deployer);
-        nativo.recoverNativo(address(0xdead));
+        nativo.recoverNativo();
         assertEq(nativo.balanceOf(nativo.treasury()), 1.5 ether);
 
         vm.prank(deployer);
-        vm.expectRevert("Invalid account");
-        nativo.recoverNativo(address(this));
+        nativo.recoverNativo();
+        assertEq(nativo.balanceOf(nativo.treasury()), 1.5 ether);
 
-        // if has no funds will revert
-
-        vm.prank(deployer);
-        vm.expectRevert();
-        nativo.recoverNativo(address(0xdead));
-        vm.prank(deployer);
-        vm.expectRevert();
-        nativo.recoverNativo(address(0));
         assertEq(nativo.balanceOf(nativo.treasury()), 1.5 ether);
     }
 
@@ -79,7 +67,7 @@ contract NativoAdminTest is Test {
         nativo.depositTo{value: 0.5 ether}(address(0));
 
         vm.prank(deployer);
-        nativo.recoverNativo(address(0));
+        nativo.recoverNativo();
 
         address newTreasury = makeAddr("newTreasury");
         vm.expectRevert();
@@ -95,7 +83,7 @@ contract NativoAdminTest is Test {
         nativo.depositTo{value: 0.5 ether}(address(0));
 
         vm.prank(deployer);
-        nativo.recoverNativo(address(0));
+        nativo.recoverNativo();
 
         assertEq(nativo.balanceOf(newTreasury), 0.5 ether);
     }

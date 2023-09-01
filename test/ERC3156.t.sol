@@ -16,13 +16,13 @@ contract ERC3156Test is Test {
     function setUp() public {
         vm.prank(manager);
         // name and symbol depend on the blockchain we are deploying
-        nativo = new Nativo("Wrapped Nativo crypto", "nANY");
+        nativo = new Nativo("Wrapped Nativo crypto", "nANY", manager, manager);
 
         vm.prank(manager);
         nativo.setTreasury(treasury);
     }
 
-    function invariantMetadata() public {
+    function testMetadata() public {
         assertEq(nativo.name(), "Wrapped Nativo crypto", "Wrong name");
         assertEq(nativo.symbol(), "nANY", "Wrong symbol");
         assertEq(nativo.decimals(), 18, "Wrong decimals");
@@ -73,7 +73,7 @@ contract ERC3156Test is Test {
         nativo.flashLoan(receiver, otherToken, 10000, "");
 
         nativo.deposit{value: 10009}();
-        vm.expectRevert("!implemented");
+        vm.expectRevert(Nativo.NotImplemented.selector);
         nativo.flashLoan(receiver, address(nativo), 10000, "0x");
 
         vm.expectRevert(abi.encodeWithSignature("InsufficientBalance()"));
@@ -98,7 +98,7 @@ contract ERC3156Test is Test {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         nativo.deposit{value: 10_000}();
 
-        vm.expectRevert("ERC3156: min amount is 1000 wei");
+        vm.expectRevert(abi.encodeWithSignature("ERC3156MinAmount10000wei()"));
         nativo.flashLoan(receiver, address(nativo), 9999, "");
     }
 
@@ -106,7 +106,7 @@ contract ERC3156Test is Test {
         ERC3156BorrowerMock receiver = new ERC3156BorrowerMock(true, true);
         nativo.deposit{value: 10_000}();
 
-        vm.expectRevert("ERC3156: reentrancy not allowed");
+        vm.expectRevert(abi.encodeWithSignature("ERC3156NonReentrant()"));
         nativo.flashLoan(
             receiver,
             address(nativo),

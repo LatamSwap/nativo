@@ -26,7 +26,7 @@ contract NativoUXGasTest is Test, GasSnapshot {
 
         // name and symbol depend on the blockchain we are deploying
 
-        nativo = new Nativo("Nativo Wrapped Ether", "nETH");
+        nativo = new Nativo("Nativo Wrapped Ether", "nETH", address(this), address(this));
         weth = WETH(payable(DeployWeth.deploy()));
 
         uxWithNativo = new UxWithNativo(nativo);

@@ -33,7 +33,7 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
         emit TokensReceived(spender, sender, amount, data);
 
         _transferReceived(spender, sender, amount, data);
-        
+
         if (badImplementation) {
             return bytes4(0);
         }
@@ -51,7 +51,7 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
         if (badImplementation) {
             return bytes4(0);
         }
-        
+
         return IERC1363Spender.onApprovalReceived.selector;
     }
 
