@@ -92,17 +92,17 @@ abstract contract ERC20 {
         return StrHelper.bytes32ToString(_symbol);
     }
 
-    function allowance(address user, address spender) public returns (uint256) {
+    function allowance(address user, address spender) public view returns (uint256) {
         return _allowance(user, spender).value;
     }
 
-    function nonces() internal returns (mapping(address user => uint256 nonce) storage _nonces) {
+    function nonces() internal pure returns (mapping(address user => uint256 nonce) storage _nonces) {
         assembly {
             _nonces.slot := _NONCES_SLOT
         }
     }
 
-    function nonces(address user) public returns (uint256 _nonce) {
+    function nonces(address user) public view returns (uint256 _nonce) {
         _nonce = nonces()[user];
     }
 
