@@ -46,6 +46,9 @@
 
 # Deployments
 
+## opBNB Testnet
+
+[`0xff6ae961405b4f3e3169e6640cd1ca3083d58a7b`](https://opbnb-testnet.bscscan.com/address/0xff6ae961405b4f3e3169e6640cd1ca3083d58a7b)
 
 ## Mantle Testnet
 
