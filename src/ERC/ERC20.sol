@@ -53,12 +53,6 @@ abstract contract ERC20 is IERC20 {
                             EIP-2612 STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    // @dev this is setted in a _NONCES_SLOT
-    // uint256 private constant _NONCES_SLOT = uint256(keccak256(abi.encodePacked("nonces"))) - 1;
-    // uint256 private constant _NONCES_SLOT = 0x9c054ed3b44e062c2512c7d33eb0c6bb551261bef4f17ca9367201ef0f7aa000;
-    uint256 private constant _NONCES_SLOT = 0x9c054ed3b44e062c2512c7d33eb0c6bb551261bef4f17ca9367201ef0f7aa000;
-    // mapping(address user => uint256 nonce) public nonces;
-
     uint256 internal immutable INITIAL_CHAIN_ID;
 
     bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;
@@ -97,14 +91,8 @@ abstract contract ERC20 is IERC20 {
         return _allowance(user, spender).value;
     }
 
-    function nonces() internal pure returns (mapping(address user => uint256 nonce) storage _nonces) {
-        assembly {
-            _nonces.slot := _NONCES_SLOT
-        }
-    }
-
-    function nonces(address user) public view returns (uint256 _nonce) {
-        _nonce = nonces()[user];
+    function nonces(address user) public view returns (uint256) {
+        return _nonces(user).value;
     }
 
     function totalSupply() external view virtual returns (uint256);
@@ -151,7 +139,7 @@ abstract contract ERC20 is IERC20 {
                     abi.encodePacked(
                         "\x19\x01",
                         DOMAIN_SEPARATOR(),
-                        keccak256(abi.encode(_PERMIT_SIGN, owner, spender, value, nonces()[owner]++, deadline))
+                        keccak256(abi.encode(_PERMIT_SIGN, owner, spender, value, _nonces(owner).value++, deadline))
                     )
                 ),
                 v,
@@ -235,6 +223,15 @@ abstract contract ERC20 is IERC20 {
         assembly {
             mstore(0x00, owner)
             mstore(0x20, spender)
+            value.slot := keccak256(0x00, 0x40)
+        }
+    }
+
+    function _nonces(address owner) internal pure returns (Value storage value) {
+        /// @solidity memory-safe-assembly
+        assembly {
+            mstore(0x00, 0xff) // just use a simple push1(0xff) to avoid collisions
+            mstore(0x20, owner)
             value.slot := keccak256(0x00, 0x40)
         }
     }

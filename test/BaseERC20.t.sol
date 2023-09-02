@@ -236,6 +236,7 @@ contract Erc20Test is Test {
             )
         );
 
+        assertEq(token.nonces(owner), 0);
         token.permit(owner, address(0xCAFE), 1e18, block.timestamp, v, r, s);
 
         assertEq(token.allowance(owner, address(0xCAFE)), 1e18);
