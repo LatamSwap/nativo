@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {StrHelper} from "../StrHelper.sol";
+import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
-abstract contract ERC20 {
+abstract contract ERC20 is IERC20 {
     // Balances of users will be stored onfrom 0x000000000000
     // reserve slots for balance storage
     // uint256[1 << 160] private __gapBalances;
@@ -27,9 +28,9 @@ abstract contract ERC20 {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event Transfer(address indexed fxrom, address indexed to, uint256 amount);
-
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
+    /// @dev declared on openzeppelin/token/ERC20/IERC20.sol
+    // event Transfer(address indexed from, address indexed to, uint256 value);
+    // event Approval(address indexed owner, address indexed spender, uint256 amount);
 
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
