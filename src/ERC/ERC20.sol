@@ -198,12 +198,12 @@ abstract contract ERC20 is IERC20 {
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
-        Value storage _balance = _balanceOf(from);
+        Value storage _balanceFrom = _balanceOf(from);
 
-        if (_balance.value < amount) revert InsufficientBalance();
+        if (_balanceFrom.value < amount) revert InsufficientBalance();
 
         unchecked {
-            _balanceOf(from).value -= amount;
+            _balanceFrom.value = _balanceFrom.value - amount;
             _balanceOf(to).value += amount;
         }
         emit Transfer(from, to, amount);
