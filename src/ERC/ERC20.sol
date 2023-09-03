@@ -101,25 +101,28 @@ abstract contract ERC20 is IERC20 {
         return _balanceOf(account).value;
     }
     
-    function approve(address spender, uint256 amount) external returns (bool) {
+    function approve(address spender, uint256 amount) external returns (bool ret) {
         _allowance(msg.sender, spender).value = amount;
 
         emit Approval(msg.sender, spender, amount);
 
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
-    function transfer(address to, uint256 amount) external returns (bool) {
+    function transfer(address to, uint256 amount) external returns (bool ret) {
         _transfer(msg.sender, to, amount);
 
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
-    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool ret) {
         _useAllowance(from, amount);
         _transfer(from, to, amount);
 
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
     /*//////////////////////////////////////////////////////////////

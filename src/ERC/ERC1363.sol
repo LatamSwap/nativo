@@ -45,8 +45,8 @@ abstract contract ERC1363 is ERC20 {
     /// @param spender The contract permitted to spend the tokens
     /// @param amount The amount of tokens to spend
     /// @param data Additional data with no specified format to send to the `spender` contract
-    /// @return true unless the `spender` contract throws error or does not implement `onApprovalReceived(address,uint256,bytes)`
-    function approveAndCall(address spender, uint256 amount, bytes memory data) public returns (bool) {
+    /// @return ret true unless the `spender` contract throws error or does not implement `onApprovalReceived(address,uint256,bytes)`
+    function approveAndCall(address spender, uint256 amount, bytes memory data) public returns (bool ret) {
         _approve(msg.sender, spender, amount);
         bytes4 response = IERC1363Spender(spender).onApprovalReceived(msg.sender, amount, data);
 
@@ -55,7 +55,8 @@ abstract contract ERC1363 is ERC20 {
         if (response != _INTERFACE_ID_ERC1363_ON_APPROVAL_RECEIVED) {
             revert Spender_onApprovalReceived_rejected();
         }
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
     function transferAndCall(address to, uint256 amount) public returns (bool) {
@@ -66,8 +67,8 @@ abstract contract ERC1363 is ERC20 {
     /// @param to The address to transfer `to`
     /// @param amount The amount to be transferred
     /// @param data Additional data with no specified format to send to the recipient
-    /// @return true unless the recipient contract throws error , in that case it reverts.
-    function transferAndCall(address to, uint256 amount, bytes memory data) public returns (bool) {
+    /// @return ret true unless the recipient contract throws error , in that case it reverts.
+    function transferAndCall(address to, uint256 amount, bytes memory data) public returns (bool ret) {
         _transfer(msg.sender, to, amount);
         bytes4 response = IERC1363Receiver(to).onTransferReceived(msg.sender, msg.sender, amount, data);
         // the response must equal to _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED
@@ -75,14 +76,15 @@ abstract contract ERC1363 is ERC20 {
         if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
             revert Receiver_transferReceived_rejected();
         }
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
     function transferFromAndCall(address from, address to, uint256 amount) external returns (bool) {
         return transferFromAndCall(from, to, amount, "");
     }
 
-    function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool) {
+    function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool ret) {
         // @dev _useAllowance will revert if not has enough allowance
         _useAllowance(from, amount);
         // now lets transfer nativo tokens to the `to` address
@@ -95,7 +97,8 @@ abstract contract ERC1363 is ERC20 {
         if (response != _INTERFACE_ID_ERC1363_ON_TRANSFER_RECEIVED) {
             revert Receiver_transferReceived_rejected();
         }
-        return true;
+        // cheaper than set ret to true
+        assembly{ ret := caller() }
     }
 
     /*//////////////////////////////////////////////////////////////
