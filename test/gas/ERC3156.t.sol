@@ -25,13 +25,10 @@ contract ERC3156Test is Test {
     }
 
     function test_Gas_FlashLoanSuccess() public {
-        
         nativo.deposit{value: 10009}();
-        
+
         // 1 token to pay the fee
         nativo.transfer(address(receiver), 9);
         nativo.flashLoan(receiver, address(nativo), 10000, "");
-
     }
-
 }

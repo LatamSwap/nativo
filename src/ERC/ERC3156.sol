@@ -150,8 +150,10 @@ abstract contract ERC3156 is ERC20, IERC3156FlashLender {
         // equivalent of _spendAllowance(address(receiver), address(this), amount + fee);
         Value storage currentAllowance = _allowance(address(receiver), address(this));
         // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
-        if (currentAllowance.value != type(uint256).max) currentAllowance.value = currentAllowance.value - (amount+fee);
-        
+        if (currentAllowance.value != type(uint256).max) {
+            currentAllowance.value = currentAllowance.value - (amount + fee);
+        }
+
         _burn(address(receiver), amount);
         _transfer(address(receiver), _flashFeeReceiver(), fee);
         return true;

@@ -42,17 +42,15 @@ contract GasErc20Test is Test {
     function test_Gas_BurnFrom() external {
         address eoa = makeAddr("EOA");
 
-        
         token.mint(eoa, 100);
         vm.prank(eoa);
-        token.approve(address(this), 50);      
+        token.approve(address(this), 50);
         token.burnFrom(eoa, 20);
     }
 
     bytes32 constant PERMIT_TYPEHASH =
         keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
-   
     function test_Gas_Mint() public {
         token.mint(address(0xBEEF), 1e18);
 
@@ -91,7 +89,6 @@ contract GasErc20Test is Test {
         vm.prank(from);
         token.approve(address(this), type(uint256).max);
         token.transferFrom(from, address(0xBEEF), 1e18);
-
     }
 
     function test_Gas_Permit() public {

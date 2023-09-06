@@ -35,19 +35,19 @@ contract NativoErrorsTest is Test {
     }
 
     function testWithdrawTo() public {
-        vm.expectRevert(/*Nativo.AddressZero.selector*/);
+        vm.expectRevert( /*Nativo.AddressZero.selector*/ );
         nativo.withdrawTo(address(0), 1);
 
         // nothing to burn
-        vm.expectRevert(/*ERC20.InsufficientBalance.selector*/);
+        vm.expectRevert( /*ERC20.InsufficientBalance.selector*/ );
         nativo.withdrawTo(EOA, 1);
 
         nativo.deposit{value: 1}();
 
-        vm.expectRevert(/*Nativo.ETHTransferFailed.selector*/);
+        vm.expectRevert( /*Nativo.ETHTransferFailed.selector*/ );
         nativo.withdrawTo(address(this), 1);
 
-        vm.expectRevert(/*ERC20.InsufficientBalance.selector*/);
+        vm.expectRevert( /*ERC20.InsufficientBalance.selector*/ );
         nativo.withdrawTo(EOA, 2);
     }
 
@@ -64,12 +64,12 @@ contract NativoErrorsTest is Test {
         nativo.approve(address(this), 1);
 
         // nothing to burn
-        vm.expectRevert(/*ERC20.InsufficientBalance.selector*/);
+        vm.expectRevert( /*ERC20.InsufficientBalance.selector*/ );
         nativo.withdrawFromTo(EOA, bob, 1);
 
         nativo.depositTo{value: 1}(EOA);
 
-        vm.expectRevert(/*Nativo.ETHTransferFailed.selector*/);
+        vm.expectRevert( /*Nativo.ETHTransferFailed.selector*/ );
         nativo.withdrawFromTo(EOA, address(this), 1);
     }
 
@@ -105,13 +105,11 @@ contract NativoErrorsTest is Test {
         nativo.setTreasury(address(0));
     }
 
-    function testDontCollisionWithBalances(address from, address spender, uint256 amount) public{
+    function testDontCollisionWithBalances(address from, address spender, uint256 amount) public {
         vm.prank(from);
         vm.record();
         nativo.approve(spender, amount);
-        (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(
-            address(nativo)
-        );
+        (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(address(nativo));
         assertGt(uint256(writes[0]), type(uint160).max);
     }
 }

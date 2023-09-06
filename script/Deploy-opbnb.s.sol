@@ -17,6 +17,6 @@ contract OpbnbDeployScript is Script {
         nativoETH = address(new Nativo("Nativo Wrapped opBNB", "ntBNB", address(this), address(this)));
     }
 }
-// https://opbnb-testnet.bscscan.com 
+// https://opbnb-testnet.bscscan.com
 
 // forge verify-contract 0xff6ae961405b4f3e3169e6640cd1ca3083d58a7b src/Nativo.sol:Nativo --optimizer-runs=20000

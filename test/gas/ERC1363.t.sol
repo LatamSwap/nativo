@@ -22,19 +22,15 @@ contract GasERC1363Test is Test {
         vm.deal(EOA, 1 ether);
         vm.prank(EOA);
         nativo.deposit{value: 1 ether}();
-
     }
 
-    
     function test_Gas_ApproveAndCall() public {
         vm.prank(EOA);
         nativo.approveAndCall(address(nft), 0.5 ether);
-
     }
 
-    
     function test_Gas_TransferAndCall() public {
-        vm.prank(EOA);        
+        vm.prank(EOA);
         nativo.transferAndCall(address(nft), 0.5 ether);
     }
 

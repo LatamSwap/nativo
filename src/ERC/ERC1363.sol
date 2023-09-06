@@ -56,7 +56,9 @@ abstract contract ERC1363 is ERC20 {
             revert Spender_onApprovalReceived_rejected();
         }
         // cheaper than set ret to true
-        assembly{ ret := caller() }
+        assembly {
+            ret := caller()
+        }
     }
 
     function transferAndCall(address to, uint256 amount) public returns (bool) {
@@ -77,14 +79,19 @@ abstract contract ERC1363 is ERC20 {
             revert Receiver_transferReceived_rejected();
         }
         // cheaper than set ret to true
-        assembly{ ret := caller() }
+        assembly {
+            ret := caller()
+        }
     }
 
     function transferFromAndCall(address from, address to, uint256 amount) external returns (bool) {
         return transferFromAndCall(from, to, amount, "");
     }
 
-    function transferFromAndCall(address from, address to, uint256 amount, bytes memory data) public returns (bool ret) {
+    function transferFromAndCall(address from, address to, uint256 amount, bytes memory data)
+        public
+        returns (bool ret)
+    {
         // @dev _useAllowance will revert if not has enough allowance
         _useAllowance(from, amount);
         // now lets transfer nativo tokens to the `to` address
@@ -98,7 +105,9 @@ abstract contract ERC1363 is ERC20 {
             revert Receiver_transferReceived_rejected();
         }
         // cheaper than set ret to true
-        assembly{ ret := caller() }
+        assembly {
+            ret := caller()
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
