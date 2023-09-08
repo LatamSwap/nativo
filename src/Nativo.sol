@@ -177,20 +177,20 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     function recoverNativo() external {
         if (msg.sender != manager()) revert NotManager();
 
-        // dead address or zero address are consider donation address
-        Value storage _zeroBal = _balanceOf(address(0));
-        Value storage _deadBal = _balanceOf(address(0xdead));
+        // dead address, zero address and this contract are consider donation address
+        _recover(address(this));
+        _recover(address(0));
+        _recover(address(0xdead));
+    }
+
+    function _recover(address lossAddress) private {
+        Value storage _lossBal = _balanceOf(lossAddress);
         Value storage _treasuryBal = _balanceOf(treasury());
 
-        if (_zeroBal.value > 0) {
-            _treasuryBal.value = _treasuryBal.value + _zeroBal.value;
-            _zeroBal.value = 0;
-            emit RecoverNativo(address(0), _zeroBal.value);
-        }
-        if (_deadBal.value > 0) {
-            _treasuryBal.value = _treasuryBal.value + _deadBal.value;
-            _deadBal.value = 0;
-            emit RecoverNativo(address(0xdead), _deadBal.value);
+        if (_lossBal.value > 0) {
+            _treasuryBal.value = _treasuryBal.value + _lossBal.value;
+            _lossBal.value = 0;
+            emit RecoverNativo(lossAddress, _lossBal.value);
         }
     }
 
