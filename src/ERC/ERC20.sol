@@ -14,6 +14,15 @@ abstract contract ERC20 is IERC20 {
     bytes32 private constant _EIP712_DOMAIN =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
+    // Use assembly to emit events, inspired by https://github.com/Vectorized/solady/blob/main/src/tokens/ERC20.sol
+    /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
+    uint256 private constant _TRANSFER_EVENT_SIGNATURE =
+        0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
+
+    /// @dev `keccak256(bytes("Approval(address,address,uint256)"))`.
+    uint256 private constant _APPROVAL_EVENT_SIGNATURE =
+        0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925;
+
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -104,10 +113,12 @@ abstract contract ERC20 is IERC20 {
     function approve(address spender, uint256 amount) external returns (bool ret) {
         _allowance(msg.sender, spender).value = amount;
 
-        emit Approval(msg.sender, spender, amount);
-
-        // cheaper than set ret to true
         assembly {
+            // emit Approval(msg.sender, spender, amount);
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, caller(), spender)
+
+            // cheaper than set ret to true
             ret := caller()
         }
     }
@@ -161,7 +172,11 @@ abstract contract ERC20 is IERC20 {
             _allowance(recoveredAddress, spender).value = value;
         }
 
-        emit Approval(owner, spender, value);
+        // emit Approval(owner, spender, value);
+        assembly {
+            mstore(0x00, value)
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, owner, spender)
+        }
     }
 
     function DOMAIN_SEPARATOR() public view returns (bytes32) {
@@ -181,7 +196,12 @@ abstract contract ERC20 is IERC20 {
             _balanceOf(to).value += amount;
         }
 
-        emit Transfer(address(0), to, amount);
+        // emit Transfer(address(0), to, amount);
+        assembly {
+            /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
+            mstore(0x20, amount)
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0x00, to)
+        }
     }
 
     function _burn(address from, uint256 amount) internal {
@@ -193,7 +213,12 @@ abstract contract ERC20 is IERC20 {
             _balance.value = _balance.value - amount;
         }
 
-        emit Transfer(from, address(0), amount);
+        // emit Transfer(from, address(0), amount);
+        assembly {
+            /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
+            mstore(0x20, amount)
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, 0x00)
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -203,7 +228,11 @@ abstract contract ERC20 is IERC20 {
     function _approve(address owner, address spender, uint256 amount) internal {
         _allowance(owner, spender).value = amount;
 
-        emit Approval(owner, spender, amount);
+        // emit Approval(owner, spender, amount);
+        assembly {
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _APPROVAL_EVENT_SIGNATURE, owner, spender)
+        }
     }
 
     function _transfer(address from, address to, uint256 amount) internal {
@@ -215,7 +244,12 @@ abstract contract ERC20 is IERC20 {
             _balanceFrom.value = _balanceFrom.value - amount;
             _balanceOf(to).value += amount;
         }
-        emit Transfer(from, to, amount);
+        // emit Transfer(from, to, amount);
+        assembly {
+            /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
+            mstore(0x20, amount)
+            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, to)
+        }
     }
 
     // idea taken from https://github.com/Philogy/meth-weth/blob/5219af2f4ab6c91f8fac37b2633da35e20345a9e/src/reference/ReferenceMETH.sol
