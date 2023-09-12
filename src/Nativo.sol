@@ -14,6 +14,13 @@ import {ERC3156} from "./ERC/ERC3156.sol";
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
+/**
+ * @title Nativo
+ * @dev Nativo is an enhanced version of the WETH contract, which provides
+ * a way to wrap the native cryptocurrency of any supported EVM network into
+ * an ERC20 token, thus enabling more sophisticated interaction with smart
+ * contracts and DApps on various blockchains.
+ */
 contract Nativo is ERC20, ERC1363, ERC3156 {
     /*//////////////////////////////////////////////////////////////
                                  ERRORS
@@ -28,7 +35,6 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event RecoverNativo(address indexed account, uint256 amount);
     event SetTreasury(address oldManager, address newManager);
     event SetManager(address oldTreasury, address newTreasury);
 
@@ -167,6 +173,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
                        PROTOCOL RECOVER LOGIC
     //////////////////////////////////////////////////////////////*/
 
+    /// @notice Recover ERC20 token sent to the contract, even Nativo
     function recoverERC20(address token, uint256 amount) external {
         if (msg.sender != manager()) revert NotManager();
         SafeTransferLib.safeTransfer(token, treasury(), amount);
@@ -177,20 +184,18 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     function recoverNativo() external {
         if (msg.sender != manager()) revert NotManager();
 
-        // dead address, zero address and this contract are consider donation address
-        _recover(address(this));
+        // dead address and zero address are consider donation address
         _recover(address(0));
         _recover(address(0xdead));
     }
 
     function _recover(address lossAddress) private {
+        // @dev get balance of loss address
         Value storage _lossBal = _balanceOf(lossAddress);
-        Value storage _treasuryBal = _balanceOf(treasury());
 
+        // @dev if loss address have balance, send it to treasury
         if (_lossBal.value > 0) {
-            _treasuryBal.value = _treasuryBal.value + _lossBal.value;
-            _lossBal.value = 0;
-            emit RecoverNativo(lossAddress, _lossBal.value);
+            _transfer(lossAddress, treasury(), _lossBal.value);
         }
     }
 
