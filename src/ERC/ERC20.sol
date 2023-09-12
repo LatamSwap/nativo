@@ -199,8 +199,8 @@ abstract contract ERC20 is IERC20 {
         // emit Transfer(address(0), to, amount);
         assembly {
             /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
-            mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, 0x00, to)
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, 0x00, to)
         }
     }
 
@@ -216,8 +216,8 @@ abstract contract ERC20 is IERC20 {
         // emit Transfer(from, address(0), amount);
         assembly {
             /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
-            mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, 0x00)
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, from, 0x00)
         }
     }
 
@@ -241,14 +241,14 @@ abstract contract ERC20 is IERC20 {
         if (_balanceFrom.value < amount) revert InsufficientBalance();
 
         unchecked {
-            _balanceFrom.value = _balanceFrom.value - amount;
+            _balanceFrom.value -= amount;
             _balanceOf(to).value += amount;
         }
         // emit Transfer(from, to, amount);
         assembly {
             /// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
-            mstore(0x20, amount)
-            log3(0x20, 0x20, _TRANSFER_EVENT_SIGNATURE, from, to)
+            mstore(0x00, amount)
+            log3(0x00, 0x20, _TRANSFER_EVENT_SIGNATURE, from, to)
         }
     }
 
@@ -284,8 +284,8 @@ abstract contract ERC20 is IERC20 {
         Value storage currentAllowance = _allowance(owner, msg.sender);
         if (currentAllowance.value < amount) revert InsufficientAllowance();
         unchecked {
-            // if msg.sender try to spend more than allowed it will do an arythmetic underflow revert
-            if (currentAllowance.value != type(uint256).max) currentAllowance.value = currentAllowance.value - amount;
+            // arythmetic underflow check on previous if
+            if (currentAllowance.value != type(uint256).max) currentAllowance.value -= amount;
         }
     }
 }
