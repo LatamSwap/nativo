@@ -26,7 +26,7 @@ interface INativo {
 
     event Approval(address indexed owner, address indexed spender, uint256 amount);
     event RecoverNativo(address indexed account, uint256 amount);
-    event Transfer(address indexed fxrom, address indexed to, uint256 amount);
+    event Transfer(address indexed from, address indexed to, uint256 amount);
 
     fallback() external payable;
 

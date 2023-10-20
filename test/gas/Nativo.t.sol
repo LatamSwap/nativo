@@ -45,11 +45,11 @@ contract NativoTest is Test {
         assertEq(nativo.totalSupply(), 1 ether, "Wrong total supply");
         assertEq(nativo.balanceOf(address(this)), 1 ether, "Wrong balance of user");
 
-        // contract cant receive ether, doesnt have a fallback function
+        // contract cant receive ether, doesn't have a fallback function
         vm.expectRevert(Nativo.ETHTransferFailed.selector);
         nativo.withdraw(0.5 ether);
 
-        // contract cant receive ether, doesnt have a fallback function
+        // contract cant receive ether, doesn't have a fallback function
         vm.expectRevert(Nativo.ETHTransferFailed.selector);
         nativo.withdrawTo(address(this), 0.5 ether);
 
@@ -80,7 +80,7 @@ contract NativoTest is Test {
         vm.assume(removeTo != 0x000000000000000000636F6e736F6c652e6c6f67);
         // avoid precompiled contracts
         vm.assume(removeTo > address(0x100));
-        // if removeTo is a contract and doesnt have a receive function, this will fail, to we skip this for now
+        // if removeTo is a contract and doesn't have a receive function, this will fail, to we skip this for now
         vm.assume(removeTo.code.length == 0x00);
 
         vm.deal(EOA, amount);
@@ -119,7 +119,7 @@ contract NativoTest is Test {
         vm.assume(removeTo != 0x000000000000000000636F6e736F6c652e6c6f67);
         // avoid precompiled contracts
         vm.assume(removeTo > address(0x100));
-        // if removeTo is a contract and doesnt have a receive function, this will fail, to we skip this for now
+        // if removeTo is a contract and doesn't have a receive function, this will fail, to we skip this for now
         vm.assume(removeTo.code.length == 0x00);
 
         vm.deal(EOA, amount);
@@ -166,7 +166,7 @@ contract NativoTest is Test {
         nativo.withdrawTo(bob, 1);
         assertEq(bob.balance, 1);
 
-        // widthdraw to self
+        // withdraw to self
         nativo.withdrawTo(EOA, 1);
         assertEq(EOA.balance, 2);
         assertEq(nativo.balanceOf(EOA), 0);
@@ -229,7 +229,7 @@ contract NativoTest is Test {
         assertEq(nativo.balanceOf(address(0xc0ffe)), 1 ether);
     }
 
-    function testwithdrawFromTo() public {
+    function testWithdrawFromTo() public {
         vm.expectRevert();
         nativo.withdrawFromTo(EOA, address(0), 1);
         vm.expectRevert();

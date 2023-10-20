@@ -88,7 +88,7 @@ contract NativoAdminTest is Test {
         assertEq(nativo.balanceOf(newTreasury), 0.5 ether);
     }
 
-    function testsetManager() external {
+    function testSetManager() external {
         vm.prank(deployer);
         vm.expectRevert();
         nativo.setManager(address(0));
