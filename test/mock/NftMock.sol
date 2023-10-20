@@ -11,7 +11,7 @@ import {IERC1363Spender} from "openzeppelin/interfaces/IERC1363Spender.sol";
 contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
     using ERC165Checker for address;
 
-    uint256 public tokenid;
+    uint256 public tokenId;
     address _nativo;
     bool badImplementation;
 
@@ -57,13 +57,13 @@ contract NFTtoken is ERC721, IERC1363Receiver, IERC1363Spender {
 
     function _transferReceived(address spender, address sender, uint256 amount, bytes memory data) internal {
         require(amount == 0.5 ether, "Send 0.5 ether");
-        _mint(sender, ++tokenid);
+        _mint(sender, ++tokenId);
     }
 
     function _approvalReceived(address sender, uint256 amount, bytes memory data) internal {
         require(amount == 0.5 ether, "Send 0.5 ether");
         IERC20(_nativo).transferFrom(sender, address(this), amount);
-        _mint(sender, ++tokenid);
+        _mint(sender, ++tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {

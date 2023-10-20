@@ -24,7 +24,7 @@ contract NativoErrorsTest is Test {
         nativo.withdraw(1);
 
         // withdraw to address(this) should fail because
-        // this contract doesnt have a fallback function
+        // this contract doesn't have a fallback function
 
         nativo.deposit{value: 1}();
         vm.expectRevert(Nativo.ETHTransferFailed.selector);
@@ -51,7 +51,7 @@ contract NativoErrorsTest is Test {
         nativo.withdrawTo(EOA, 2);
     }
 
-    function testwithdrawFromTo() public {
+    function testWithdrawFromTo() public {
         address bob = makeAddr("bob");
 
         vm.expectRevert();

@@ -5,7 +5,7 @@ import {StrHelper} from "../StrHelper.sol";
 import {IERC20} from "openzeppelin/token/ERC20/IERC20.sol";
 
 abstract contract ERC20 is IERC20 {
-    // Balances of users will be stored onfrom 0x000000000000
+    // Balances of users will be stored on from 0x000000000000
     // reserve slots for balance storage
     // uint256[1 << 160] private __gapBalances;
 
@@ -284,7 +284,7 @@ abstract contract ERC20 is IERC20 {
         Value storage currentAllowance = _allowance(owner, msg.sender);
         if (currentAllowance.value < amount) revert InsufficientAllowance();
         unchecked {
-            // arythmetic underflow check on previous if
+            // arithmetic underflow check on previous if
             if (currentAllowance.value != type(uint256).max) currentAllowance.value -= amount;
         }
     }

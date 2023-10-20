@@ -180,7 +180,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     /// @notice Recover nativo ERC20 token sent to dead address: address(0) or address(0xdead)
-    /// @dev Nativo ERC20 token sent to dead address are consider donations and shoul be claimable by the protocol
+    /// @dev Nativo ERC20 token sent to dead address are consider donations and should be claimable by the protocol
     function recoverNativo() external {
         if (msg.sender != manager()) revert NotManager();
 
@@ -200,7 +200,7 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
     }
 
     /*//////////////////////////////////////////////////////////////
-                       PROTOCOL ADDRESS MANAGMENT
+                       PROTOCOL ADDRESS MANAGEMENT
     //////////////////////////////////////////////////////////////*/
 
     function setManager(address account) external {

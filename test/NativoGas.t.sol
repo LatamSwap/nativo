@@ -30,7 +30,7 @@ contract NativoGasTest is Test, GasSnapshot {
         bytes32 _slot;
 
         /*
-        @dev not necesary, but just in case
+        @dev not necessary, but just in case
         // lest copy slots to proper init the contracts that were etch;
         // 10 first slots should be enough (depend on how many storage variables are in the contract)
         for (uint256 i; i < 10; i++) {
