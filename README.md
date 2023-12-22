@@ -46,6 +46,9 @@
 
 # Deployments
 
+## MODE Testnet
+[0x719A4ecf2d0fB7Fc28608082BB15A69ef8791330](https://sepolia.explorer.mode.network/address/0x719A4ecf2d0fB7Fc28608082BB15A69ef8791330)
+
 ## opBNB Testnet
 
 [`0xff6ae961405b4f3e3169e6640cd1ca3083d58a7b`](https://opbnb-testnet.bscscan.com/address/0xff6ae961405b4f3e3169e6640cd1ca3083d58a7b)
