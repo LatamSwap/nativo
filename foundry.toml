@@ -6,7 +6,7 @@ libs = ["lib"]
 ffi = true
 fs_permissions = [{ access = "read-write", path = "./" }]
 
-solc = "0.8.20"
+solc = "0.8.23"
 optimize=true
 optimize_runs=20000
 evm_version="paris"
