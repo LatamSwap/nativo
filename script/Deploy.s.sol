@@ -29,7 +29,7 @@ contract AvaxDeployScript is Script {
 
         require(r, "CREATE2_FACTORY call failed");
         //address deployer = abi.decode(data, (address));
-        address deployer = 0x80E53112a3964bf1Ff2eB03188B4D4fACffa5a55;
+        address deployer = 0x77D4183E456c68a407056cad739DCF1AEaD77bbd;
         vm.broadcast();
         nativo = NativoDeployer(deployer).deploy(keccak256("demo"), 
             abi.encodePacked(
