@@ -75,6 +75,16 @@ contract Nativo is ERC20, ERC1363, ERC3156 {
             // store address of manager
             sstore(_MANAGER_SLOT, _manager)
         }
+
+        // docs on https://docs.mode.network/build-on-mode/sfs-sequencer-fee-sharing/sfs-registering-a-contract
+        if (block.chainid == 34443) {
+            // Mainnet SFS Address
+            0x8680CEaBcb9b56913c519c069Add6Bc3494B7020.call(abi.encodeWithSignature("register(address)", _manager));
+        } else if (block.chaind == 919) {
+            // Testnet SFS Address: 
+            0xBBd707815a7F7eb6897C7686274AFabd7B579Ff6.call(abi.encodeWithSignature("register(address)", _manager));
+        }
+
     }
 
     /*//////////////////////////////////////////////////////////////
